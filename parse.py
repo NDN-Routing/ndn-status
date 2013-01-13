@@ -153,7 +153,7 @@ for cur in directory:
 					elif 'Type' in line:
 						extra, _type = line.split('Type ')
 						if _type == '1':
-							router_links1[router].add((linkID, linkdata))
+							router_links[router].add((linkID, linkdata))
 
 				link_timestamp[router] = timestamp
 
