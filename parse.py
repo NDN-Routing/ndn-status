@@ -18,8 +18,7 @@ router_prefixes	 = {}
 prefix_timestamp = {}
 link_timestamp 	 = {}
 
-router_links1	 = defaultdict(set)
-#router_links3	 = defaultdict(set)
+router_links	 = defaultdict(set)
 
 #############################################################################################
 # Read the configuration file to find the log directory, last log file, and last line read. #
@@ -80,24 +79,7 @@ with open (localdir + '/links') as f:
                                 if 'END' in line: break
 
                                 linkID, linkdata = line.split(':', 1)
-                                router_links1[router].add((linkID, linkdata))
-
-			
-#with open (localdir + '/links3') as f:
-#	while 1:
-#		line = (f.readline()).rstrip()
-#		if not line: break
-#
-#      	 	if 'Router' in line:
-#			extra, router = line.split(':', 1)
-#
-#               	while not 'END' in line:
-#				line = (f.readline()).rstrip()
-#                       	if not line: break
-#				if 'END' in line: break
-
-#                       	linkID, linkdata = line.split(':', 1)
-#                        	router_links3[router].add((linkID, linkdata))
+                                router_links[router].add((linkID, linkdata))
 
 with open (localdir + '/link_timestamp') as f:
 	for line in f:
@@ -172,8 +154,6 @@ for cur in directory:
 						extra, _type = line.split('Type ')
 						if _type == '1':
 							router_links1[router].add((linkID, linkdata))
-						#elif _type == '3':
-						#	router_links3[router].add((linkID, linkdata))
 
 				link_timestamp[router] = timestamp
 
@@ -188,7 +168,7 @@ with open (localdir + '/prefix', 'w') as f:
 		timestamp = prefix_timestamp[prefix]
 		f.write(prefix + ':' + router + ':' + timestamp + '\n')
 
-with open (localdir + '/links1', 'w') as f:
+with open (localdir + '/links', 'w') as f:
 	linkinfo = set
 
 	for router, linkinfo in router_links1.items():
@@ -197,16 +177,6 @@ with open (localdir + '/links1', 'w') as f:
 			f.write(linkID + ':' + linkdata + '\n')
 
 		f.write('END\n')
-
-#with open (localdir + '/links3', 'w') as f:
-#        linkinfo = set
-#
-#        for router, linkinfo in router_links3.items():
-#                f.write('Router:' + router + '\n')
-#                for linkID, linkdata in linkinfo:
-#                        f.write(linkID + ':' + linkdata + '\n')
-#
-#                f.write('END\n')
 
 with open (localdir + '/link_timestamp', 'w') as f:
 	for router, timestamp in link_timestamp.items():
