@@ -171,7 +171,7 @@ with open (localdir + '/prefix', 'w') as f:
 with open (localdir + '/links', 'w') as f:
 	linkinfo = set
 
-	for router, linkinfo in router_links1.items():
+	for router, linkinfo in router_links.items():
 		f.write('Router:' + router + '\n')
 		for linkID, linkdata in linkinfo:
 			f.write(linkID + ':' + linkdata + '\n')
