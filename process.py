@@ -102,7 +102,8 @@ def links_table():
         print '\t\t\t<tr>'
         print '\t\t\t\t<th class="border_left" scope="col">Router</th>'
         print '\t\t\t\t<th scope="col">LSA Timestamp</th>'
-        print '\t\t\t\t<th class="border_right" scope="col">Links</th>'
+        print '\t\t\t\t<th scope="col">Links</th>'
+	print '\t\t\t\t<th class="border_right" scope="col">Status</th>'
         print '\t\t\t</tr>'
         print '\t\t</thead>'
         print '\t\t<tbody>'
@@ -135,11 +136,21 @@ def links_table():
 			else:
 				status = topology[router, link]
 
-			print '\t\t\t<td id="' + status + '">' + link + '</td></tr>'
+			if status == 'Lime':
+				status = 'Online'
+			elif status == 'Red':
+				status = 'Offline'
+			elif status == 'SkyBlue':
+				print '\t\t\t<td id="' + status + '" class="right_border">' + link + '</td>'
+                        	print '\t\t\t<td id="' + status + '">Online, not in topology</td></tr>'
+				continue
+
+			print '\t\t\t<td id="' + status + '" class="right_border">' + link + '</td>'
+			print '\t\t\t<td id="' + status + '">' + status + '</td></tr>'
 		
 		print '\t\t</tr>'
 
-	print '\t<tfoot><tr><td colspan="3"></td></td></tfoot>'
+	print '\t<tfoot><tr><td colspan="4"></td></td></tfoot>'
 	print '\t</tbody>'
 	print '\t</table>'
 			
@@ -272,6 +283,7 @@ print '\t<link rel="stylesheet" type="text/css" href="style.css" />'
 print '</head>'
 print '<body>'
 
+print '<div id="top2"></div>'
 print '<div id="contentwrapper">'
 print '\t<div id="header">'
 print '\t\t<div id="title">'
