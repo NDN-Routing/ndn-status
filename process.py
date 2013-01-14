@@ -34,9 +34,9 @@ def process_topo():
 	for router, links in router_links.items():
 		for link in links:
 			if not topology.has_key((router, link)):
-				topology[router, link] = 'SkyBlue'
+				topology[router, link] = 'skyblue'
 			else:
-				topology[router, link] = 'Lime'
+				topology[router, link] = 'lime'
 
 def prefix_table():
 	print '\t<table id="box-table-a" class="one">'
@@ -50,7 +50,7 @@ def prefix_table():
 	print '\t\t</thead>'
 	print '\t\t<tbody>'
 
-	status = 'Online'
+	status = 'online'
 	prefixes = set
 	switch = True
 
@@ -59,9 +59,9 @@ def prefix_table():
 
 		if not prefixes:
 			router_prefixes[router].add('-')
-			status = 'Offline'
+			status = 'offline'
 		else:
-			status = 'Online'
+			status = 'online'
 
 		if switch:
 			print '\t\t<tr class="odd">'
@@ -77,19 +77,19 @@ def prefix_table():
 			if prefix_timestamp.has_key(prefix):
 				timestamp = time.asctime(time.localtime(float(prefix_timestamp[prefix]))) + ' ' + timezone
 
-				if (float(time.time()) - float(prefix_timestamp[prefix])) > 2400 and status == 'Online':
-                                	status = 'Out-of-date'
+				if (float(time.time()) - float(prefix_timestamp[prefix])) > 2400 and status == 'online':
+                                	status = 'out-of-date'
 			else:
 				timestamp = '-'
 			
 			if not switch:
 				print '\t\t\t<td class="odd">' + timestamp + '</td>'
 				print '\t\t\t<td class="odd">' + prefix + '</td>'
-				print '\t\t\t<td id="' + status + '">' + status + '</td>'
+				print '\t\t\t<td id="' + status + '">' + status.title() + '</td>'
 			else:
 				print '\t\t\t<td>' + timestamp + '</td>'
                                 print '\t\t\t<td>' + prefix + '</td>'
-				print '\t\t\t<td id="' + status + '">' + status + '</td>'
+				print '\t\t\t<td id="' + status + '">' + status.title() + '</td>'
 			print '\t\t</tr>'		
 	
 	print '\t</tbody>'
@@ -136,17 +136,17 @@ def links_table():
 			else:
 				status = topology[router, link]
 
-			if status == 'Lime':
-				status = 'Online'
+			if status == 'lime':
+				status = 'online'
 			elif status == 'Red':
-				status = 'Offline'
-			elif status == 'SkyBlue':
+				status = 'offline'
+			elif status == 'skyblue':
 				print '\t\t\t<td id="' + status + '" class="right_border">' + link + '</td>'
                         	print '\t\t\t<td id="' + status + '">Online, not in topology</td></tr>'
 				continue
 
 			print '\t\t\t<td id="' + status + '" class="right_border">' + link + '</td>'
-			print '\t\t\t<td id="' + status + '">' + status + '</td></tr>'
+			print '\t\t\t<td id="' + status + '">' + status.title() + '</td></tr>'
 		
 		print '\t\t</tr>'
 
@@ -314,47 +314,73 @@ print '\t\t<div class="titles"><p>Status information:</p></div>'
 curtime = time.asctime(time.localtime(time.time())) + ' ' + timezone
 timestamp = time.asctime(time.localtime(float(lasttimestamp))) + ' ' + timezone
 
-print '<table>'
-print '\t<thead>'
-print '\t\t<tr>'
-print '\t\t\t<td><p>Page last updated:</p></td>'
-print '\t\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
-print '\t\t\t<td><p id="green">' + curtime + '</p></td>'
-print '\t\t</tr>'
-print '\t</thead>'
-print '\t<tr>'
-print '\t\t<td><p>Last logfile processed:</p></td>'
-print '\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
-print '\t\t<td><p id="green">' + lastfile + '</p></td>'
-print '\t</tr>'
-print '\t<tr>'
-print '\t<td><p>Last timestamp in logfile:</p></td>'
-print '\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
-print '\t\t<td><p id="green">' + timestamp + '</p></td>'
-print '\t</tr>'
-print '</table>'
+print '\t\t<table id="information">'
+print '\t\t\t<thead>'
+print '\t\t\t\t<tr>'
+print '\t\t\t\t\t<td>Page last updated:</td>'
+print '\t\t\t\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
+print '\t\t\t\t\t<td><span id="green">' + curtime + '</span></td>'
+print '\t\t\t\t</tr>'
+print '\t\t\t</thead>'
+print '\t\t\t<tbody>'
+print '\t\t\t\t<tr>'
+print '\t\t\t\t\t<td>Last logfile processed:</td>'
+print '\t\t\t\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
+print '\t\t\t\t\t<td><span id="green">' + lastfile + '</span></td>'
+print '\t\t\t\t</tr>'
+print '\t\t\t\t<tr>'
+print '\t\t\t\t<td>Last timestamp in logfile:</td>'
+print '\t\t\t\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
+print '\t\t\t\t\t<td><span id="green">' + timestamp + '</span></td>'
+print '\t\t\t\t</tr>'
+print '\t\t\t</tbody>'
+print '\t\t</table>'
 
-#print '\t\t<table id="legend">'
-#print '\t\t\t<tr><td id="Online">&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;</td><td><p id="green">Online</p></td></tr>'
-#print '\t\t\t<tr><td id="Offline">&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;</td><td><p id="green">Offline</p></td></tr>'
-#print '\t\t\t<tr><td id="SkyBlue">&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;</td><td><p id="green">Online, not part of topology</p></td></tr>'
-#print '\t\t\t<tr><td id="Online">&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;</td><td><p id="green">Out-of-date timestamp (no update for 40 minutes)</p></td></tr>'
-#print '\t\t</table>'
+print '\t\t<table id="legend">'
+print '\t\t\t<thead>'
+print '\t\t\t\t<tr>'
+print '\t\t\t\t\t<td id="Online">&nbsp;&nbsp;&nbsp;</td>'
+print '\t\t\t\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
+print '\t\t\t\t\t<td><span id="green">Online</span></td>'
+print '\t\t\t\t</tr>'
+print '\t\t\t</thead>'
+print '\t\t\t<tbody>'
+print '\t\t\t\t<tr>'
+print '\t\t\t\t\t<td id="Offline"></td>'
+print '\t\t\t\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
+print '\t\t\t\t\t<td><span id="green">Offline</span></td>'
+print '\t\t\t\t</tr>'
+print '\t\t\t\t<tr>'
+print '\t\t\t\t\t<td id="SkyBlue"></td>'
+print '\t\t\t\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
+print '\t\t\t\t\t<td><span id="green">Online, not part of topology</span></td>'
+print '\t\t\t\t</tr>'
+print '\t\t\t\t<tr>'
+print '\t\t\t\t\t<td id="Out-Of-Date"></td>'
+print '\t\t\t\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
+print '\t\t\t\t\t<td><span id="green">Out-of-date timestamp (no update for 40 minutes)</span></td>'
+print '\t\t\t\t</tr>'
+print '\t\t\t</tbody>'
+print '\t\t</table>'
+
 print '\t</div>'
 
 print '\t<div id="wrap">'
-print '\t\t<a name="advertised_prefix">'
 print '\t\t<div class="titles2"><p>Advertised Prefixes:</p></div>'
 prefix_table()
 
-print '<a name="link_status">'
-print '<div class="titles2"><p>Links Status:</p></div>'
+print '\t\t<div class="titles2"><p>Links Status:</p></div>'
 links_table()
+
+# End of #wrap
 print '\t</div>'
 
+# End of #contentwrapper
 print '</div>'
+
 print '<div id="leftcolumn"></div>'
 print '<div id="rightcolumn"></div>'
+
 print '</body>'
 print '</html>'
 

@@ -50,7 +50,7 @@ with open (localdir + '/parse.conf') as f:
 
 		if 'lastbyte' in line:
 			keyword, value = line.split('=', 1)
-                        lastbyte = float(value)
+                        lastbyte = int(value)
                         continue
 
 ###################################
