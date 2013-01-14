@@ -111,7 +111,7 @@ def links_table():
 	links = set
 	switch = True
 
-	for router, links in sorted(router_links.items()):
+	for router, links in sorted(set_topology.items()):
 		size = str(len(links))
 
 		if switch:
@@ -241,7 +241,7 @@ with open (localdir + '/prefix') as f:
                 router_prefixes[router_name].add(prefix)
                 prefix_timestamp[prefix] = timestamp
 
-with open (localdir + '/links1') as f:
+with open (localdir + '/links') as f:
         while 1:
                 line = (f.readline()).rstrip()
                 if not line: break

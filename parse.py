@@ -146,6 +146,7 @@ for cur in directory:
 
 					if 'Advertising Router' in line:
 						extra, router = line.split('Router ', 1)
+						router_links[router].clear()
 					elif 'Link ID' in line:
 						extra, linkID = line.split('Link ID ', 1)
 					elif 'Link Data' in line:
