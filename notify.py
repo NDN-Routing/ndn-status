@@ -1,4 +1,4 @@
-#!/usr/lib/python
+#!/usr/bin/python
 #coding=utf-8
 
 COMMASPACE = ', '
@@ -33,9 +33,7 @@ def send(router, _type):
 	if isinstance(router, tuple):
 		router = router[0]
 
-	router = host_name[router]
-
-	message.append('Dear Operator of ' + router + ',\n\n')
+	message.append('Dear Operator of ' + host_name[router] + ',\n\n')
 
 	if _type == 'prefix':
 		message.append('The status page has detected that the prefix')
@@ -47,12 +45,12 @@ def send(router, _type):
 		message.append('Link to status page: http://netlab.cs.memphis.edu/script/htm/status.htm\n')
 	elif _type == 'link':
 		message.append('The status page has detected that your link(s)')
-		message.append(' with the following links is/are down:\n')
+		message.append(' with the following node(s) is/are down:\n')
 	
 		down = no_link[router]
-
+	
 		for link in down:
-			message.append('- ' + link + '.\n');
+			message.append('- ' + host_name[link] + '.\n');
 
 		message.append('\nThis message is repeated once every 24 hours until')
                 message.append(' the problem is fixed. If you have any questions,')
@@ -66,7 +64,7 @@ def send(router, _type):
 	msg['Subject'] = 'Subject here'
 	msg['From'] = 'me@pythoniscool.com'
 	msg['To'] = 'aalyyan@memphis.edu'
-	msg['CC'] = COMMASPACE.join(cc_list)
+	msg['CC'] = COMMASPACE.join(CC_list)
 
 	# Send the email using UoM mail server.
 	#s = smtplib.SMTP('localhost')
@@ -173,7 +171,7 @@ for router, link in no_link:
 			add = False
 			break
 	
-	if  add == False: 
+	if  add == True: 
 		temp[router].add(link)
 
 no_link = temp
