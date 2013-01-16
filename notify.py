@@ -1,14 +1,20 @@
 #!/usr/bin/python
 #coding=utf-8
 
+##############
+# Constants. #
+##############
 COMMASPACE = ', '
-CC_list = ['you@cc_list.com', 'me@cc_list.com']
+FROM = 'aalyyan@memphis.edu'
+LOCAL_DIR = ''
+CC_LIST = ['you@cc_list.com', 'me@cc_list.com']
 
 ############
 # Imports. #
 ############
 import socket
 import smtplib
+import time
 
 from email.mime.text import MIMEText
 from collections import defaultdict
@@ -24,14 +30,21 @@ topology = set()
 
 contact_list = defaultdict(list)
 
-###########################
-# Function to send email. #
-###########################
+#############################################
+# Function to send email, and write to log. #
+#############################################
+def toLog(message):
+        with open(LOCAL_DIR + 'notify.log', 'a') as f:
+                _time = time.asctime(time.localtime(time.time()))
+                f.write(_time + ' - ' + message + '\n')
+
 def send(router, _type):
 	message = []
 	
 	if isinstance(router, tuple):
 		router = router[0]
+
+	toLog('Sending email to: ' + host_name[router])
 
 	message.append('Dear Operator of ' + host_name[router] + ',\n\n')
 
@@ -61,15 +74,17 @@ def send(router, _type):
 	msg = MIMEText(message)
 
 	# Set the header information.
-	msg['Subject'] = 'Subject here'
-	msg['From'] = 'me@pythoniscool.com'
-	msg['To'] = 'aalyyan@memphis.edu'
-	msg['CC'] = COMMASPACE.join(CC_list)
+	msg['Subject'] = _type.title() + ' down - ' + host_name[router]
+	msg['From'] = FROM
+	msg['To'] = FROM
+	msg['CC'] = COMMASPACE.join(CC_LIST)
 
 	# Send the email using UoM mail server.
 	#s = smtplib.SMTP('localhost')
-	#s.sendmail(msg['From'], msg['To'], msg.as_string())
+	#s.sendmail(FROM, msg['To'], msg.as_string())
 	#s.quit()
+
+	toLog('Email successfully sent to: ' + host_name[router])
 
 #####################################################################
 # Open prefix, links, contact list,  and topology file to get data. #
@@ -179,9 +194,15 @@ no_link = temp
 ####################
 # Send out emails. #
 ####################
+with open(LOCAL_DIR + 'notify.log', 'a') as f:
+        _time = time.asctime(time.localtime(time.time()))
+        f.write(_time + ' - New instance of notify started...\n')
+
 for router in no_prefix:
 	send(router, 'prefix')
 
 for router in no_link.keys():
 	router = (router, link)
 	send(router, 'link')
+
+toLog('Instance ended.\n\n')
