@@ -78,7 +78,7 @@ def send(router, _type):
 	for element in sendto:
 		address = element[0]
 		name = element[1]
-		temp = formataddr((str(Header(u'Adam Alyyan', 'utf-8')), 'a64adam@gmail.com'))
+		temp = formataddr((str(Header(name, 'utf-8')), address))
 		SEND_LIST.append(temp)
 
 	msg['Subject'] = _type.title() + ' down - ' + host_name[router]
@@ -87,7 +87,7 @@ def send(router, _type):
 	msg['CC'] = COMMASPACE.join(CC_LIST)
 	 
 	s = smtplib.SMTP('localhost')
-	s.sendmail(msg['From'], msg['To'], msg.as_string())
+	s.sendmail(FROM, SEND_LIST+CC_LIST, msg.as_string())
 	s.quit()
 
 	toLog('Email successfully sent to: ' + host_name[router])
