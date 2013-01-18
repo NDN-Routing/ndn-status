@@ -3,7 +3,6 @@
 parse = []
 process = []
 notify = []
-conf = []
 
 with open('parse.py') as f:
 	for line in f:
@@ -42,10 +41,14 @@ with open('notify.py', 'w') as f:
                 else:
                         f.write(line)
 
-with open('parse_new.conf', 'w') as f:
-	for line in conf:
-		if 'logdir=' in line:
-			f.write('logdir=\'' + logdir + '\'')
-		else:
-			f.write(line)
+with open('parse.conf', 'w') as f:
+	f.write('logdir=' + logdir + '\n')
+	f.write('lastfile=0\n')
+	f.write('lasttimestamp=0\n')
+	f.write('lastbyte=0\n')
+	f.write('timezone=' + timezone + '\n')
+	f.write('timetaken=0\n')
 
+f = open('links', 'w').close()
+f = open('link_timestamp', 'w').close()
+f = open('prefix', 'w').close()

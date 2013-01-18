@@ -249,6 +249,10 @@ with open (localdir + '/links') as f:
 
                 if 'Router' in line:
                         extra, router = line.split(':', 1)
+
+			if router not in host_name.keys():
+				continue
+
 			router_name = host_name[router]
 
                         while not 'END' in line:
@@ -266,6 +270,10 @@ with open (localdir + '/link_timestamp') as f:
 		if not line: break
 
 		link, timestamp = line.split(':', 1)
+
+		if link not in host_name.keys():
+			continue
+
 		link_name = host_name[link]
 		link_timestamp[link_name] = timestamp
 
@@ -275,21 +283,21 @@ process_topo()
 ################
 # Output HTML. #
 ################
-#print '<html>'
-#print '<head>'
-#print '<meta charset="utf-8">'
-#print '<title>NDN · Routing Status</title>'
-#print '\t<link href="http://fonts.googleapis.com/css?family=Rambla:400,700|Istok+Web:400,700" rel="stylesheet" type="text/css">'
-#print '\t<link rel="stylesheet" type="text/css" href="style.css" />'
-#print '</head>'
-#print '<body>'
+print '<html>'
+print '<head>'
+print '<meta charset="utf-8">'
+print '<title>NDN · Routing Status</title>'
+print '\t<link href="http://fonts.googleapis.com/css?family=Rambla:400,700|Istok+Web:400,700" rel="stylesheet" type="text/css">'
+print '\t<link rel="stylesheet" type="text/css" href="style.css" />'
+print '</head>'
+print '<body>'
 
-#print '<div id="top2"></div>'
-#print '<div id="contentwrapper">'
-#print '\t<div id="header">'
-#print '\t\t<div id="title">'
-#print '\t\t\t<h1>NDN ·</span> <span id="grey">routing</span> <span id="green">status</span></h1>'
-#print '\t\t</div>'
+print '<div id="top2"></div>'
+print '<div id="contentwrapper">'
+print '\t<div id="header">'
+print '\t\t<div id="title">'
+print '\t\t\t<h1>NDN ·</span> <span id="grey">routing</span> <span id="green">status</span></h1>'
+print '\t\t</div>'
 
 end = time.time() - start
 totaltime = float(end) + float(timetaken)
@@ -298,16 +306,16 @@ print '<h5>Dynamically produced in ' + "{0:.4f}".format(totaltime) + ' seconds.<
 print '</div>'
 
 
-#print '\t\t<div id="navbar">'
-#print '\t\t\t<ul>'
-#print '\t\t\t\t<li><a href="home.html">home</a></li>'
-#print '\t\t\t\t<li><a href="status.html" class="active">status</a></li>'
-#print '\t\t\t\t<li><a href="archive.html">archive</a></li>'
-#print '\t\t\t\t<li><a href="operators.html">operators</a></li>'
-#print '\t\t\t\t<li><a href="topology.html">topology</a></li>'
-#print '\t\t\t</ul>'
-#print '\t\t</div>'
-#print '\t</div>'
+print '\t\t<div id="navbar">'
+print '\t\t\t<ul>'
+print '\t\t\t\t<li><a href="home.html">home</a></li>'
+print '\t\t\t\t<li><a href="status.html" class="active">status</a></li>'
+print '\t\t\t\t<li><a href="archive.html">archive</a></li>'
+print '\t\t\t\t<li><a href="operators.html">operators</a></li>'
+print '\t\t\t\t<li><a href="topology.html">topology</a></li>'
+print '\t\t\t</ul>'
+print '\t\t</div>'
+print '\t</div>'
 
 print '\t<div id="infodiv">'
 print '\t\t<div class="titles"><p>Status information:</p></div>'
