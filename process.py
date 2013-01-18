@@ -14,6 +14,7 @@ start = time.time()
 # Delcaring and initializing needed variables. #
 ################################################
 localdir = '/ndn/python_script'
+
 links_list	 = []
 
 prefix_timestamp = {}

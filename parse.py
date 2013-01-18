@@ -13,7 +13,6 @@ start = time.time()
 # Delcaring and initializing needed variables. #
 ################################################
 localdir = '/ndn/python_script'
-
 router_prefixes	 = {}
 prefix_timestamp = {}
 link_timestamp 	 = {}

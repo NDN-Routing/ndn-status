@@ -17,7 +17,8 @@ from collections import defaultdict
 # Variables. #
 ##############
 COMMASPACE = ', '
-LOCAL_DIR = ''
+LOCAL_DIR = '/ndn/python_script'
+
 FROM = formataddr((str(Header(u'Adam Alyyan', 'utf-8')), 'a64adam@gmail.com'))
 
 cc1 = formataddr((str(Header(u'Adam Alyyan', 'utf-8')), 'a64adam@gmail.com'))
