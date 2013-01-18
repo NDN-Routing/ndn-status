@@ -85,7 +85,7 @@ def send(router, _type):
 	msg['From'] = FROM
 	msg['To'] = COMMASPACE.join(SEND_LIST)
 	msg['CC'] = COMMASPACE.join(CC_LIST)
-
+	 
 	s = smtplib.SMTP('localhost')
 	s.sendmail(msg['From'], msg['To'], msg.as_string())
 	s.quit()
