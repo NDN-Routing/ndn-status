@@ -132,10 +132,10 @@ def links_table():
 		print '\t\t\t<td rowspan="' + size + '">' + timestamp + '</td>'
 		
 		for link in links:
+			status = topology[router, link]
+			
 			if float(time.time() - (float(link_timestamp[link]))) > 2400 and topology[router, link] == 'Lime':
 				status = 'Out-of-date'
-			else:
-				status = topology[router, link]
 
 			if status == 'lime':
 				status = 'online'
