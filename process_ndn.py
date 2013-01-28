@@ -51,47 +51,66 @@ class ccnput(pyccn.Closure):
                 co.sign(key)
                 return co
 
-	def upcall(self, kind, info):
-                if kind != pyccn.UPCALL_INTEREST:
-                        return pyccn.RESULT_OK
-
-                self.handle.put(self.content) # send the prepared data
-                self.handle.setRunTimeout(0) # finish run() by changing its timeout to 0
-
-                return pyccn.RESULT_INTEREST_CONSUMED
-
-        def start(self):
-                # register our name, so upcall is called when interest arrives
-                self.handle.setInterestFilter(self.name, self)
-
-                print "listening ..."
-
-                # enter ccn loop (upcalls won't be called without it, get
-                # doesn't require it as well)
-                # -1 means wait forever
-                self.handle.run(-1)
-
 ##############################
 # Functions to process data. #
 ##############################
-def produce_prefix():
+def prefix_json():
 	prefixes = set
-
-	data = []
+	tmp = []
 
 	for router in sorted(set_topology.keys()):
+		status = 'Online'
 		prefixes = router_prefixes[router]
+
+		tmp.append('{"router":"' + router + '",')
+		tmp.append('"prefixes":[')
 
 		if not prefixes:
 			router_prefixes[router].add('-')
+			status = 'Offline'
 
 		for prefix in prefixes:
-			print router + ' ' + prefix
-			data.append(router + ':' + prefix)
+			if not prefix_timestamp.has_key(prefix):
+                                prefix_timestamp[prefix] = '-'
 
-	s = ''.join(data)
-	put = ccnput('/ndn/status', s)
-	put.start()
+			tmp.append('{"prefix":"' + prefix + '",')
+			tmp.append('"timestamp":"' + prefix_timestamp[prefix] + '",')
+			tmp.append('"status":"' + status + '"}')
+		tmp.append(']}')
+
+	data = ''.join(tmp)
+	put = ccnput('/ndn/topology/status/prefix', data)
+
+def link_json():
+	links = set
+	status = ''
+	tmp = []
+
+	for router, links in sorted(set_topology.items()):
+		if not link_timestamp.has_key(router):
+			link_timestamp[router] = '-'
+	
+		tmp.append('{"router":"' + router + '",')
+		tmp.append('"timestamp":"' + link_timestamp[router] + '",')
+		tmp.append('"links":[')
+
+		for link in links:
+			if topology[router, link] == 'lime':
+                        	status = 'Online'
+                	elif topology[router, link] == 'Red':
+                        	status = 'Offline'
+                	elif topology[router, link] == 'skyblue':
+                        	status = 'notintopology'
+
+                	if status == 'Online' and float(time.time() - (float(link_timestamp[link]))) > 2400:
+                        	status = 'Out-of-date'
+
+			tmp.append('{"link":"' + link + '",')
+			tmp.append('"status":"' + status + '"}')
+		tmp.append(']}')
+
+	data = ''.join(tmp)
+	put = ccnput('/ndn/topology/status/link', data)
 
 def process_topo():
 	links = set
@@ -225,6 +244,6 @@ with open (localdir + '/link_timestamp') as f:
 		link_timestamp[link_name] = timestamp
 
 process_topo()
-produce_prefix()
-
+prefix_json()
+link_json()
 
