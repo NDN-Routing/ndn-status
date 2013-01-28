@@ -6,6 +6,7 @@
 ############
 import socket
 import time
+import pyccn
 from collections import defaultdict
 
 start = time.time()
@@ -26,9 +27,91 @@ set_topology	 = defaultdict(set)
 router_links 	 = defaultdict(set)
 router_prefixes	 = defaultdict(set)
 
+###################################
+# PyCCN Class to publish content. #
+###################################
+class ccnput(pyccn.Closure):
+        def __init__(self, name, content):
+                self.handle = pyccn.CCN()
+                self.name = pyccn.Name(name)
+                self.content = self.prepareContent(content, self.handle.getDefaultKey())
+		self.handle.put(self.content)
+
+        def prepareContent(self, content, key):
+                co = pyccn.ContentObject()
+                co.name = self.name.appendVersion().appendSegment(0)
+                co.content = content
+
+                si = co.signedInfo
+                si.publisherPublicKeyDigest = key.publicKeyID
+                si.keyLocator = pyccn.KeyLocator(key)
+                si.type = pyccn.CONTENT_DATA
+                si.finalBlockID = pyccn.Name.num2seg(0)
+
+                co.sign(key)
+                return co
+
 ##############################
 # Functions to process data. #
 ##############################
+def prefix_json():
+	prefixes = set
+	tmp = []
+
+	for router in sorted(set_topology.keys()):
+		status = 'Online'
+		prefixes = router_prefixes[router]
+
+		tmp.append('{"router":"' + router + '",')
+		tmp.append('"prefixes":[')
+
+		if not prefixes:
+			router_prefixes[router].add('-')
+			status = 'Offline'
+
+		for prefix in prefixes:
+			if not prefix_timestamp.has_key(prefix):
+                                prefix_timestamp[prefix] = '-'
+
+			tmp.append('{"prefix":"' + prefix + '",')
+			tmp.append('"timestamp":"' + prefix_timestamp[prefix] + '",')
+			tmp.append('"status":"' + status + '"}')
+		tmp.append(']}')
+
+	data = ''.join(tmp)
+	put = ccnput('/ndn/topology/status/prefix', data)
+
+def link_json():
+	links = set
+	status = ''
+	tmp = []
+
+	for router, links in sorted(set_topology.items()):
+		if not link_timestamp.has_key(router):
+			link_timestamp[router] = '-'
+	
+		tmp.append('{"router":"' + router + '",')
+		tmp.append('"timestamp":"' + link_timestamp[router] + '",')
+		tmp.append('"links":[')
+
+		for link in links:
+			if topology[router, link] == 'lime':
+                        	status = 'Online'
+                	elif topology[router, link] == 'Red':
+                        	status = 'Offline'
+                	elif topology[router, link] == 'skyblue':
+                        	status = 'notintopology'
+
+                	if status == 'Online' and float(time.time() - (float(link_timestamp[link]))) > 2400:
+                        	status = 'Out-of-date'
+
+			tmp.append('{"link":"' + link + '",')
+			tmp.append('"status":"' + status + '"}')
+		tmp.append(']}')
+
+	data = ''.join(tmp)
+	put = ccnput('/ndn/topology/status/link', data)
+
 def process_topo():
 	links = set
         
@@ -38,123 +121,6 @@ def process_topo():
 				topology[router, link] = 'skyblue'
 			else:
 				topology[router, link] = 'lime'
-
-def prefix_table():
-	print '\t<table id="box-table-a" class="one">'
-	print '\t\t<thead>'
-	print '\t\t\t<tr>'
-	print '\t\t\t\t<th class="border_left" scope="col">Router</th>'
-	print '\t\t\t\t<th scope="col">Timestamp</th>'
-	print '\t\t\t\t<th scope="col">Prefix</th>'
-	print '\t\t\t\t<th class="border_right" scope="col">Status</th>'
-	print '\t\t\t</tr>'
-	print '\t\t</thead>'
-	print '\t\t<tbody>'
-
-	status = 'online'
-	prefixes = set
-	switch = True
-
-	for router in sorted(set_topology.keys()):
-		prefixes = router_prefixes[router]
-
-		if not prefixes:
-			router_prefixes[router].add('-')
-			status = 'offline'
-		else:
-			status = 'online'
-
-		if switch:
-			print '\t\t<tr class="odd">'
-			switch = False
-		else:
-			print '\t\t<tr>'
-			switch = True
-
-		size = str(len(prefixes))
-		print '\t\t\t<td rowspan="' + size + '">' + router + '</td>'
-
-		for prefix in prefixes:
-			if prefix_timestamp.has_key(prefix):
-				timestamp = time.asctime(time.localtime(float(prefix_timestamp[prefix]))) + ' ' + timezone
-
-				if (float(time.time()) - float(prefix_timestamp[prefix])) > 2400 and status == 'online':
-                                	status = 'out-of-date'
-			else:
-				timestamp = '-'
-			
-			if not switch:
-				print '\t\t\t<td class="odd">' + timestamp + '</td>'
-				print '\t\t\t<td class="odd">' + prefix + '</td>'
-				print '\t\t\t<td id="' + status + '">' + status.title() + '</td>'
-			else:
-				print '\t\t\t<td>' + timestamp + '</td>'
-                                print '\t\t\t<td>' + prefix + '</td>'
-				print '\t\t\t<td id="' + status + '">' + status.title() + '</td>'
-			print '\t\t</tr>'		
-	
-	print '\t</tbody>'
-	print '\t<tfoot><tr><td colspan="4"></td></td></tfoot>'
-	print '\t</table>'
-
-def links_table():
-	print '\t<table id="box-table-a">'
-        print '\t\t<thead>'
-        print '\t\t\t<tr>'
-        print '\t\t\t\t<th class="border_left" scope="col">Router</th>'
-        print '\t\t\t\t<th scope="col">LSA Timestamp</th>'
-        print '\t\t\t\t<th scope="col">Links</th>'
-	print '\t\t\t\t<th class="border_right" scope="col">Status</th>'
-        print '\t\t\t</tr>'
-        print '\t\t</thead>'
-        print '\t\t<tbody>'
-
-	links = set
-	switch = True
-
-	for router, links in sorted(set_topology.items()):
-		size = str(len(links))
-
-		if switch:
-			print '\t\t<tr class="odd">'
-			switch = False
-		else:
-			print '\t\t<tr>'
-			switch = True
-
-		print '\t\t\t<td rowspan="' + size + '">' + router + '</td>'
-	
-		if link_timestamp.has_key(router):
-			timestamp = time.asctime(time.localtime(float(link_timestamp[router]))) + ' ' + timezone
-		else:
-			timestamp = '-'
-
-		print '\t\t\t<td rowspan="' + size + '">' + timestamp + '</td>'
-		
-		for link in links:
-			status = topology[router, link]
-			
-			if float(time.time() - (float(link_timestamp[link]))) > 2400 and topology[router, link] == 'Lime':
-				status = 'Out-of-date'
-
-			if status == 'lime':
-				status = 'online'
-			elif status == 'Red':
-				status = 'offline'
-			elif status == 'skyblue':
-				print '\t\t\t<td id="' + status + '" class="right_border">' + link + '</td>'
-                        	print '\t\t\t<td id="' + status + '">Online, not in topology</td></tr>'
-				continue
-
-			print '\t\t\t<td id="' + status + '" class="right_border">' + link + '</td>'
-			print '\t\t\t<td id="' + status + '">' + status.title() + '</td></tr>'
-		
-		print '\t\t</tr>'
-
-	print '\t<tfoot><tr><td colspan="4"></td></td></tfoot>'
-	print '\t</tbody>'
-	print '\t</table>'
-			
 
 #############################################################################################
 # Read the configuration file to find the last file timestamp, last timestamp and timezone. #
@@ -278,117 +244,6 @@ with open (localdir + '/link_timestamp') as f:
 		link_timestamp[link_name] = timestamp
 
 process_topo()
+prefix_json()
+link_json()
 
-
-################
-# Output HTML. #
-################
-print '<html>'
-print '<head>'
-print '<meta charset="utf-8">'
-print '<title>NDN · Routing Status</title>'
-print '\t<link href="http://fonts.googleapis.com/css?family=Rambla:400,700|Istok+Web:400,700" rel="stylesheet" type="text/css">'
-print '\t<link rel="stylesheet" type="text/css" href="style.css" />'
-print '</head>'
-print '<body>'
-
-print '<div id="top2"></div>'
-print '<div id="contentwrapper">'
-print '\t<div id="header">'
-print '\t\t<div id="title">'
-print '\t\t\t<h1>NDN ·</span> <span id="grey">routing</span> <span id="green">status</span></h1>'
-print '\t\t</div>'
-
-end = time.time() - start
-totaltime = float(end) + float(timetaken)
-print '<div id="speed">'
-print '<h5>Dynamically produced in ' + "{0:.4f}".format(totaltime) + ' seconds.</h5>'
-print '</div>'
-
-
-print '\t\t<div id="navbar">'
-print '\t\t\t<ul>'
-print '\t\t\t\t<li><a href="home.html">home</a></li>'
-print '\t\t\t\t<li><a href="status.html" class="active">status</a></li>'
-print '\t\t\t\t<li><a href="archive.html">archive</a></li>'
-print '\t\t\t\t<li><a href="operators.html">operators</a></li>'
-print '\t\t\t\t<li><a href="topology.html">topology</a></li>'
-print '\t\t\t</ul>'
-print '\t\t</div>'
-print '\t</div>'
-
-print '\t<div id="infodiv">'
-print '\t\t<div class="titles"><p>Status information:</p></div>'
-
-curtime = time.asctime(time.localtime(time.time())) + ' ' + timezone
-timestamp = time.asctime(time.localtime(float(lasttimestamp))) + ' ' + timezone
-
-print '\t\t<table id="information">'
-print '\t\t\t<thead>'
-print '\t\t\t\t<tr>'
-print '\t\t\t\t\t<td>Page last updated:</td>'
-print '\t\t\t\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
-print '\t\t\t\t\t<td><span id="green">' + curtime + '</span></td>'
-print '\t\t\t\t</tr>'
-print '\t\t\t</thead>'
-print '\t\t\t<tbody>'
-print '\t\t\t\t<tr>'
-print '\t\t\t\t\t<td>Last logfile processed:</td>'
-print '\t\t\t\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
-print '\t\t\t\t\t<td><span id="green">' + lastfile + '</span></td>'
-print '\t\t\t\t</tr>'
-print '\t\t\t\t<tr>'
-print '\t\t\t\t<td>Last timestamp in logfile:</td>'
-print '\t\t\t\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
-print '\t\t\t\t\t<td><span id="green">' + timestamp + '</span></td>'
-print '\t\t\t\t</tr>'
-print '\t\t\t</tbody>'
-print '\t\t</table>'
-
-print '\t\t<table id="legend">'
-print '\t\t\t<thead>'
-print '\t\t\t\t<tr>'
-print '\t\t\t\t\t<td id="online" class="bar"></td>'
-print '\t\t\t\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
-print '\t\t\t\t\t<td><span id="green">Online</span></td>'
-print '\t\t\t\t</tr>'
-print '\t\t\t</thead>'
-print '\t\t\t<tbody>'
-print '\t\t\t\t<tr>'
-print '\t\t\t\t\t<td id="offline" class="bar"></td>'
-print '\t\t\t\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
-print '\t\t\t\t\t<td><span id="green">Offline</span></td>'
-print '\t\t\t\t</tr>'
-print '\t\t\t\t<tr>'
-print '\t\t\t\t\t<td id="skyblue" class="bar"></td>'
-print '\t\t\t\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
-print '\t\t\t\t\t<td><span id="green">Online, not part of topology</span></td>'
-print '\t\t\t\t</tr>'
-print '\t\t\t\t<tr>'
-print '\t\t\t\t\t<td id="out-of-date" class="bar"></td>'
-print '\t\t\t\t\t<td>&nbsp;&nbsp;&nbsp;</td>'
-print '\t\t\t\t\t<td><span id="green">Out-of-date timestamp (no update for 40 minutes)</span></td>'
-print '\t\t\t\t</tr>'
-print '\t\t\t</tbody>'
-print '\t\t</table>'
-
-print '\t</div>'
-
-print '\t<div id="wrap">'
-print '\t\t<div class="titles2"><p>Advertised Prefixes:</p></div>'
-prefix_table()
-
-print '\t\t<div class="titles2"><p>Links Status:</p></div>'
-links_table()
-
-# End of #wrap
-print '\t</div>'
-
-# End of #contentwrapper
-print '</div>'
-
-print '<div id="leftcolumn"></div>'
-print '<div id="rightcolumn"></div>'
-
-print '</body>'
-print '</html>'
