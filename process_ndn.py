@@ -55,13 +55,12 @@ class ccnput(pyccn.Closure):
                 if kind != pyccn.UPCALL_INTEREST:
                         return pyccn.RESULT_OK
 
-                self.handle.put(self.content) # send the prepared data
-                self.handle.setRunTimeout(0) # finish run() by changing its timeout to 0
+                self.handle.put(self.content)
+                self.handle.setRunTimeout(0)
 
                 return pyccn.RESULT_INTEREST_CONSUMED
 
         def start(self):
-                # register our name, so upcall is called when interest arrives
                 self.handle.setInterestFilter(self.name, self)
 
 ##############################
@@ -92,7 +91,7 @@ def prefix_json():
 		tmp.append(']}')
 
 	data = ''.join(tmp)
-	put = ccnput('/ndn/topology/status/prefix', data)
+	put = ccnput('/ndn/memphis.edu/netlab/status/prefix', data)
 	put.start()
 
 def link_json():
@@ -124,7 +123,7 @@ def link_json():
 		tmp.append(']}')
 
 	data = ''.join(tmp)
-	put = ccnput('/ndn/topology/status/link', data)
+	put = ccnput('/ndn/memphis.edu/netlab/status/link', data)
 	put.start()
 
 def process_topo():
