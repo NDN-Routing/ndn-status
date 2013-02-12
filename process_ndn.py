@@ -51,6 +51,18 @@ class ccnput(pyccn.Closure):
                 co.sign(key)
                 return co
 
+	def upcall(self, kind, info):
+                if kind != pyccn.UPCALL_INTEREST:
+                        return pyccn.RESULT_OK
+
+                self.handle.put(self.content)
+                self.handle.setRunTimeout(0)
+
+                return pyccn.RESULT_INTEREST_CONSUMED
+
+        def start(self):
+                self.handle.setInterestFilter(self.name, self)
+
 ##############################
 # Functions to process data. #
 ##############################
@@ -79,7 +91,8 @@ def prefix_json():
 		tmp.append(']}')
 
 	data = ''.join(tmp)
-	put = ccnput('/ndn/topology/status/prefix', data)
+	put = ccnput('/ndn/memphis.edu/netlab/status/prefix', data)
+	put.start()
 
 def link_json():
 	links = set
@@ -110,7 +123,8 @@ def link_json():
 		tmp.append(']}')
 
 	data = ''.join(tmp)
-	put = ccnput('/ndn/topology/status/link', data)
+	put = ccnput('/ndn/memphis.edu/netlab/status/link', data)
+	put.start()
 
 def process_topo():
 	links = set
