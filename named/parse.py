@@ -12,8 +12,7 @@ start = time.time()
 ################################################
 # Delcaring and initializing needed variables. #
 ################################################
-localdir = '/home/ndnmonitor/LogScripts'
-
+localdir = '/ndn/python_script'
 router_prefixes	 = {}
 prefix_timestamp = {}
 link_timestamp 	 = {}

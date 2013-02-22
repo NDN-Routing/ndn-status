@@ -7,6 +7,7 @@
 import socket
 import time
 import pyccn
+import multiprocessing
 from collections import defaultdict
 
 start = time.time()
@@ -14,25 +15,35 @@ start = time.time()
 ################################################
 # Delcaring and initializing needed variables. #
 ################################################
-localdir = '/ndn/python_script'
+localdir = '/home/ndnmonitor/LogScripts'
 
-links_list	 = []
+links_list = []
+publish = []
 
 prefix_timestamp = {}
-link_timestamp	 = {}
-host_name	 = {}
-topology 	 = {}
+link_timestamp = {}
+host_name = {}
+topology  = {}
 
-set_topology	 = defaultdict(set)
-router_links 	 = defaultdict(set)
-router_prefixes	 = defaultdict(set)
+set_topology = defaultdict(set)
+router_links  = defaultdict(set)
+router_prefixes	= defaultdict(set)
+
+#####################
+# Timeout function. #
+#####################
+def lookup(host, q):
+	q.put(socket.gethostbyaddr(host))
 
 ###################################
 # PyCCN Class to publish content. #
 ###################################
 class ccnput(pyccn.Closure):
         def __init__(self, name, content):
-                self.handle = pyccn.CCN()
+                c = pyccn.CCN()
+		c.setRunTimeout(60000)
+		self.handle = c
+		#self.handle = pyccn.CCN()
                 self.name = pyccn.Name(name)
                 self.content = self.prepareContent(content, self.handle.getDefaultKey())
 		self.handle.put(self.content)
@@ -55,57 +66,72 @@ class ccnput(pyccn.Closure):
                 if kind != pyccn.UPCALL_INTEREST:
                         return pyccn.RESULT_OK
 
-                self.handle.put(self.content)
-                self.handle.setRunTimeout(0)
+                self.handle.put(self.content) # send the prepared data
+                self.handle.setRunTimeout(0) # finish run() by changing its timeout to 0
 
                 return pyccn.RESULT_INTEREST_CONSUMED
 
         def start(self):
-                self.handle.setInterestFilter(self.name, self)
+		pass
+                # register our name, so upcall is called when interest arrives
+                #self.handle.setInterestFilter(self.name, self)
 
 ##############################
 # Functions to process data. #
 ##############################
 def prefix_json():
 	prefixes = set
-	tmp = []
+	search = list(set(set_topology.keys()) | set(router_prefixes.keys()))
 
-	for router in sorted(set_topology.keys()):
+	for router in sorted(search):
 		status = 'Online'
 		prefixes = router_prefixes[router]
 
-		tmp.append('{"router":"' + router + '",')
-		tmp.append('"prefixes":[')
+		publish.append('{"router":"' + router + '",')
+		publish.append('"prefixes":[')
 
 		if not prefixes:
 			router_prefixes[router].add('-')
 			status = 'Offline'
 
+		if router not in set_topology.keys():
+			status = 'notintopology'
+
 		for prefix in prefixes:
 			if not prefix_timestamp.has_key(prefix):
-                                prefix_timestamp[prefix] = '-'
+                                timestamp = '-'
+			else:
+				timestamp = time.asctime(time.localtime(float(prefix_timestamp[prefix]))) + ' ' + timezone
 
-			tmp.append('{"prefix":"' + prefix + '",')
-			tmp.append('"timestamp":"' + prefix_timestamp[prefix] + '",')
-			tmp.append('"status":"' + status + '"}')
-		tmp.append(']}')
+			publish.append('{"prefix":"' + prefix + '",')
+			publish.append('"timestamp":"' + timestamp + '",')
+			publish.append('"status":"' + status + '"}')
+			publish.append(',')
 
-	data = ''.join(tmp)
+		del publish[-1]
+		publish.append(']}')
+		publish.append('END')
+	del publish[-1]
+
+	data = ''.join(publish)
 	put = ccnput('/ndn/memphis.edu/netlab/status/prefix', data)
 	put.start()
+	del publish[:]
 
 def link_json():
 	links = set
 	status = ''
-	tmp = []
+	search = dict(router_links.items() + set_topology.items())
 
-	for router, links in sorted(set_topology.items()):
+	for router, links in sorted(search.items()):
 		if not link_timestamp.has_key(router):
-			link_timestamp[router] = '-'
+			timestamp = '-'
+		else:
+			timestamp = time.asctime(time.localtime(float(link_timestamp[router]))) + ' ' + timezone
 	
-		tmp.append('{"router":"' + router + '",')
-		tmp.append('"timestamp":"' + link_timestamp[router] + '",')
-		tmp.append('"links":[')
+		publish.append('{"router":"' + router + '",')
+		publish.append('"timestamp":"' + timestamp + '",')
+		publish.append('"links":[')
 
 		for link in links:
 			if topology[router, link] == 'lime':
@@ -118,13 +144,19 @@ def link_json():
                 	if status == 'Online' and float(time.time() - (float(link_timestamp[link]))) > 2400:
                         	status = 'Out-of-date'
 
-			tmp.append('{"link":"' + link + '",')
-			tmp.append('"status":"' + status + '"}')
-		tmp.append(']}')
+			publish.append('{"link":"' + link + '",')
+			publish.append('"status":"' + status + '"}')
+			publish.append(',')
 
-	data = ''.join(tmp)
-	put = ccnput('/ndn/memphis.edu/netlab/status/link', data)
-	put.start()
+		del publish[-1]
+		publish.append(']}')
+		publish.append('END')
+	del publish[-1]
+
+	data = ''.join(publish)
+        put = ccnput('/ndn/memphis.edu/netlab/status/link', data)
+        put.start()
+        del publish[:]
 
 def process_topo():
 	links = set
@@ -164,9 +196,23 @@ with open (localdir + '/parse.conf') as f:
 			timetaken = value
 			continue
 
+curtime = time.asctime(time.localtime(time.time())) + ' ' + timezone
+timestamp = time.asctime(time.localtime(float(lasttimestamp))) + ' ' + timezone
+
+publish.append('{"lastlog":"' + lastfile + '",')
+publish.append('"lasttimestamp":"' + timestamp + '",')
+publish.append('"lastupdated":"' + curtime + '"}')
+data = ''.join(publish)
+put = ccnput('/ndn/memphis.edu/netlab/status/metadata', data)
+put.start()
+del publish[:]
+
+
 ######################################################
 # Read in prefixes, links, timestamps, and topology. #
 ######################################################
+socket.setdefaulttimeout(5)
+
 with open (localdir + '/topology') as f:
 	while 1:
 		line = (f.readline()).rstrip()
@@ -188,7 +234,19 @@ with open (localdir + '/topology') as f:
                         elif router == '162.105.146.26':
                                 router_name = '162.105.146.26'
                         else:
-                                router_name, extra1, extra2 = socket.gethostbyaddr(router)
+				q = multiprocessing.Queue()
+				p = multiprocessing.Process(target=lookup, args=(router, q))
+				p.start()
+				p.join(1)
+				
+				if p.is_alive:
+					p.terminate()
+					p.join()
+				
+				if not q.empty():
+                                        router_name = (q.get())[0]
+                                else:
+                                        router_name = router
 
                         host_name[router] = router_name
 
@@ -218,7 +276,13 @@ with open (localdir + '/prefix') as f:
                 if not line: break
 
                 prefix, router, timestamp = line.split(':', 2)
-		router_name = host_name[router]
+
+		if router not in host_name.keys():
+			router_name, extra1, extra2 = socket.gethostbyaddr(router)
+			host_name[router] = router_name
+		else:
+			router_name = host_name[router]
+
                 router_prefixes[router_name].add(prefix)
                 prefix_timestamp[prefix] = timestamp
 
@@ -241,8 +305,14 @@ with open (localdir + '/links') as f:
                                 if 'END' in line: break
 
                                 linkID, extra = line.split(':', 1)
-				link_name = host_name[linkID]
-                                router_links[router_name].add(link_name)
+
+				if linkID not in host_name.keys():
+					link_name, extra1, extra2 = socket.gethostbyaddr(linkID)
+					host_name[linkID] = link_name
+				else:
+                                	link_name = host_name[linkID]
+                                
+				router_links[router_name].add(link_name)
 
 with open (localdir + '/link_timestamp') as f:
 	for line in f:
@@ -259,5 +329,8 @@ with open (localdir + '/link_timestamp') as f:
 
 process_topo()
 prefix_json()
+publish.append("\n")
 link_json()
+
+print 'Completed'
 

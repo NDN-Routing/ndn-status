@@ -7,6 +7,8 @@
 import socket
 import smtplib
 import time
+import sys
+import multiprocessing
 
 from email.header import Header
 from email.utils import formataddr
@@ -17,12 +19,12 @@ from collections import defaultdict
 # Variables. #
 ##############
 COMMASPACE = ', '
-LOCAL_DIR = '/ndn/python_script'
+LOCAL_DIR = '/home/ndnmonitor/LogScripts'
+FROM = formataddr((str(Header(u'Adam Alyyan', 'utf-8')), 'aalyyan@memphis.edu'))
 
-FROM = formataddr((str(Header(u'Adam Alyyan', 'utf-8')), 'a64adam@gmail.com'))
-
-cc1 = formataddr((str(Header(u'Adam Alyyan', 'utf-8')), 'a64adam@gmail.com'))
-CC_LIST = [cc1]
+CC_LIST = []
+cc1 = formataddr((str(Header(u'Adam Alyyan', 'utf-8')), 'aalyyan@memphis.edu'))
+CC_LIST = [cc1, cc2, cc3, cc4, cc5]
 
 host_name = {}
 routers = {}
@@ -34,7 +36,7 @@ contact_list = defaultdict(list)
 # Function to send email, and write to log. #
 #############################################
 def toLog(message):
-        with open(LOCAL_DIR + 'notify.log', 'a') as f:
+        with open(LOCAL_DIR + '/notify.log', 'a') as f:
                 _time = time.asctime(time.localtime(time.time()))
                 f.write(_time + ' - ' + message + '\n')
 
@@ -54,7 +56,7 @@ def send(router, _type):
 		message.append(' is currently not being displayed.\n\n')
 		message.append('This message is repeated once every 24 hours until')
 		message.append(' the problem is fixed. If you have any questions,')
-		message.append(' please contact Adam Alyyan (a64adam@gmail.com).\n\n')
+		message.append(' please contact Adam Alyyan (aalyyan@memphis.edu).\n\n')
 		message.append('Link to status page: http://netlab.cs.memphis.edu/script/htm/status.htm\n')
 	elif _type == 'link':
 		message.append('The status page has detected that your link(s)')
@@ -67,43 +69,51 @@ def send(router, _type):
 
 		message.append('\nThis message is repeated once every 24 hours until')
                 message.append(' the problem is fixed. If you have any questions,')
-                message.append(' please contact Adam Alyyan (a64adam@gmail.com).\n\n')
+                message.append(' please contact Adam Alyyan (aalyyan@memphis.edu).\n\n')
                 message.append('Link to status page: http://netlab.cs.memphis.edu/script/htm/status.htm\n')
 
 	message = ''.join(message)
 	msg = MIMEText(message)
 
 	# Set the header information.
-	sendto = contact_list[host_name[router]]
+	sendto = contact_list[router]
 	SEND_LIST = []
 	for element in sendto:
 		address = element[0]
 		name = element[1]
+		toLog('Recipient: ' + name + ', ' + address)
 		temp = formataddr((str(Header(name, 'utf-8')), address))
 		SEND_LIST.append(temp)
 
 	msg['Subject'] = _type.title() + ' down - ' + host_name[router]
 	msg['From'] = FROM
 	msg['To'] = COMMASPACE.join(SEND_LIST)
-	msg['CC'] = COMMASPACE.join(CC_LIST)
-	 
-	s = smtplib.SMTP('localhost')
-	s.sendmail(FROM, SEND_LIST+CC_LIST, msg.as_string())
+	msg['cc'] = COMMASPACE.join(CC_LIST)
+
+	# Send the email using UoM mail server.
+	#s = smtplib.SMTP('localhost')
+	#s.sendmail(FROM, SEND_LIST+CC_LIST, msg.as_string())
 	s.quit()
 
 	toLog('Email successfully sent to: ' + host_name[router])
 
+##############################
+# Function to get host name. #
+##############################
+def lookup(host, q):
+        q.put(socket.gethostbyaddr(host))
+
 #####################################################################
 # Open prefix, links, contact list,  and topology file to get data. #
 #####################################################################
-with open(LOCAL_DIR + 'prefix') as f:
+with open(LOCAL_DIR + '/prefix') as f:
 	for line in f:
 		line = line.rstrip()
 		prefix, router, timestamp = line.split(':', 2)
 
 		routers[router] = prefix
 
-with open(LOCAL_DIR + 'links') as f:
+with open(LOCAL_DIR + '/links') as f:
 	while 1:
 		line = (f.readline()).rstrip()
 		if not line: break
@@ -119,7 +129,7 @@ with open(LOCAL_DIR + 'links') as f:
 				link, extra = line.split(':', 1)
 				links.add((router, link))
 
-with open(LOCAL_DIR + 'topology') as f:
+with open(LOCAL_DIR + '/topology') as f:
 	while 1:
                 line = (f.readline()).rstrip()
                 if not line: break
@@ -140,7 +150,19 @@ with open(LOCAL_DIR + 'topology') as f:
                         elif router == '162.105.146.26':
                                 router_name = '162.105.146.26'
                         else:
-                                router_name, extra1, extra2 = socket.gethostbyaddr(router)
+				q = multiprocessing.Queue()
+                                p = multiprocessing.Process(target=lookup, args=(router, q))
+                                p.start()
+                                p.join(1)
+
+                                if p.is_alive:
+                                        p.terminate()
+                                        p.join()
+
+                                if not q.empty():
+                                        router_name = (q.get())[0]
+                                else:
+                                        router_name = router
 
                         host_name[router] = router_name
 	f.seek(0)
@@ -160,7 +182,7 @@ with open(LOCAL_DIR + 'topology') as f:
                                 link, extra = line.split(':', 1)
                                 topology.add((router, link))
 
-with open(LOCAL_DIR + 'list.txt') as f:
+with open(LOCAL_DIR + '/list.txt') as f:
 	for line in f:
 		contact = []
 
@@ -201,7 +223,7 @@ no_link = temp
 ####################
 # Send out emails. #
 ####################
-with open(LOCAL_DIR + 'notify.log', 'a') as f:
+with open(LOCAL_DIR + '/notify.log', 'a') as f:
         _time = time.asctime(time.localtime(time.time()))
         f.write(_time + ' - New instance of notify started...\n')
 
