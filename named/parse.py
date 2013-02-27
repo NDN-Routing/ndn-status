@@ -7,12 +7,10 @@ import os
 import time
 from collections import defaultdict
 
-start = time.time()
-
 ################################################
 # Delcaring and initializing needed variables. #
 ################################################
-localdir = '/ndn/python_script'
+localdir = '/ndn/ndn-status/named'
 router_prefixes	 = {}
 prefix_timestamp = {}
 link_timestamp 	 = {}
@@ -63,11 +61,11 @@ with open (localdir + '/prefix') as f:
 		prefix, router, timestamp = line.split(':', 2)
 		router_prefixes[prefix] = router
 		prefix_timestamp[prefix] = timestamp
-		
+
 with open (localdir + '/links') as f:
         while 1:
                 line = (f.readline()).rstrip()
-		if not line: break
+                if not line: break
 
                 if 'Router' in line:
                         extra, router = line.split(':', 1)
@@ -77,9 +75,9 @@ with open (localdir + '/links') as f:
                                 if not line: break
                                 if 'END' in line: break
 
-                                linkID, linkdata = line.split(':', 1)
-                                router_links[router].add((linkID, linkdata))
-
+                                adj_router, face = line.split(':', 1)
+                                router_links[router].add((adj_router, face))
+		
 with open (localdir + '/link_timestamp') as f:
 	for line in f:
 		line = line.rstrip()
@@ -107,27 +105,23 @@ for cur in directory:
 			line = (f.readline()).rstrip()
 			if not line: break
 
-			left, right = line.split(':', 1)
+			left, extra, right = line.partition(':')
 			timestamp, extra = left.split('-', 1)
 			line = right
 
-			# Warning: there is a double space!
-			if 'Opaque Type  236' in line:
-				while (not 'lsa_read called' in line) and (not 'ospfnstop' in line):
+			if 'Name-LSA' in line:
+				while (not 'name_lsa_end' in line):
 					line = (f.readline()).rstrip()
 					if not line: break
 
-					if 'Advertising Router' in line:
-						extra, router = line.split('Router ', 1)
-					# The case matters here and is required. Log files are wierd!
-					elif 'name prefix:' in line:
-						extra, prefix = line.split('prefix: ', 1)
-					elif 'Name Prefix:' in line:
-						extra, prefix = line.split('Prefix: ', 1)
-					elif 'Update_name_opaque_lsa called' in line:
-						action = 'add'
-					elif 'Delete _name opaque lsa called' in line:
+					if 'Name Prefix:' in line:
+						extra, prefix = line.split('Name Prefix: ', 1)
+					elif 'Origination Router:' in line:
+						extra, router = line.split('Router: ', 1)
+					elif 'Deleting name lsa' in line:
 						action = 'del'
+					elif 'Adding name lsa' in line:
+						action = 'add'
 
 				if router and prefix:
 					# Process the action
@@ -138,22 +132,34 @@ for cur in directory:
 						del router_prefixes[prefix]
 						prefix_timestamp[prefix] = timestamp
 
-			elif 'router-LSA' in line:
-				while (not 'lsa_read called' in line) and (not 'ospfnstop' in line):
+			elif 'Adj-LSA' in line:
+				while (not 'adj_lsa_end' in line):
 					line = (f.readline()).rstrip()
 					if not line: break
 
-					if 'Advertising Router' in line:
-						extra, router = line.split('Router ', 1)
-						router_links[router].clear()
-					elif 'Link ID' in line:
-						extra, linkID = line.split('Link ID ', 1)
-					elif 'Link Data' in line:
-						extra, linkdata = line.split('Link Data ', 1)
-					elif 'Type' in line:
-						extra, _type = line.split('Type ')
-						if _type == '1':
-							router_links[router].add((linkID, linkdata))
+					if 'Origination Router:' in line:
+						extra, router = line.split('Router: ', 1)
+					elif 'deleting adj lsa' in line:
+						action = 'del'
+					elif 'adding adj lsa' in line:
+						action = 'add'
+					elif 'No of Link:' in line:
+						extra, run = line.split('No of Link: ', 1)
+
+						for i in range(0, int(run)):
+							for j in range(0, 4):
+								line = (f.readline()).rstrip()
+								
+								if 'Adjacent Router:' in line:
+									extra, adj_router = line.split('Router: ', 1)
+								elif 'Connecting Face:' in line:
+									extra, face = line.split('Face: ', 1)
+
+							if router and adj_router:
+								if action == 'add':
+									router_links[router].add((adj_router, face))
+								elif action == 'del':
+									router_links[router].remove((adj_router, face))
 
 				link_timestamp[router] = timestamp
 
@@ -173,8 +179,8 @@ with open (localdir + '/links', 'w') as f:
 
 	for router, linkinfo in router_links.items():
 		f.write('Router:' + router + '\n')
-		for linkID, linkdata in linkinfo:
-			f.write(linkID + ':' + linkdata + '\n')
+		for adj_router, face in linkinfo:
+			f.write(adj_router + ':' + face + '\n')
 
 		f.write('END\n')
 
@@ -188,5 +194,3 @@ with open (localdir + '/parse.conf', 'w') as f:
 	f.write('lasttimestamp=' + lasttimestamp + '\n')
 	f.write('lastbyte=' + str(lastbyte) + '\n')
 	f.write('timezone=' + timezone + '\n')
-	end = time.time() - start
-	f.write('timetaken=' + str(end) + '\n')

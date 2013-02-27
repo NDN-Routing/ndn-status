@@ -1,0 +1,7 @@
+Router:/ndn/memphis.edu/netlab/macbook
+/ndn/memphis.edu/netlab/pollux:Red
+/ndn/memphis.edu/dunhall/castor:Red
+END
+Router:/ndn/memphis.edu/netlab/pollux
+/ndn/memphis.edu/dunhall/castor:Red
+END
