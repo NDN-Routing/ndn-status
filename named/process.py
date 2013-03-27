@@ -13,7 +13,7 @@ from collections import defaultdict
 ################################################
 # Delcaring and initializing needed variables. #
 ################################################
-localdir = '/ndn/ndn-status/named'
+localdir = '/home/ndnuser/ndn-status/named'
 
 links_list = []
 publish = []
@@ -36,6 +36,7 @@ def lookup(host, q):
 ###################################
 # PyCCN Class to publish content. #
 ###################################
+
 class ccnput(pyccn.Closure):
         def __init__(self, name, content):
                 c = pyccn.CCN()
@@ -112,8 +113,8 @@ def prefix_json():
 	del publish[-1]
 
 	data = ''.join(publish)
-	#put = ccnput('/ndn/memphis.edu/netlab/status/prefix', data)
-	#put.start()
+	put = ccnput('/ndn/memphis.edu/internal/status/prefix', data)
+	put.start()
 	del publish[:]
 	print data
 
@@ -153,8 +154,8 @@ def link_json():
 	del publish[-1]
 
 	data = ''.join(publish)
-        #put = ccnput('/ndn/memphis.edu/netlab/status/link', data)
-        #put.start()
+        put = ccnput('/ndn/memphis.edu/internal/status/link', data)
+        put.start()
         del publish[:]
 	print data
 
@@ -198,8 +199,8 @@ publish.append('{"lastlog":"' + lastfile + '",')
 publish.append('"lasttimestamp":"' + timestamp + '",')
 publish.append('"lastupdated":"' + curtime + '"}')
 data = ''.join(publish)
-#put = ccnput('/ndn/memphis.edu/netlab/status/metadata', data)
-#put.start()
+put = ccnput('/ndn/memphis.edu/internal/status/metadata', data)
+put.start()
 del publish[:]
 
 
@@ -245,7 +246,7 @@ with open (localdir + '/links') as f:
                                 if not line: break
                                 if 'END' in line: break
 
-                                link, extra = line.split(':', 1)
+                                link = line
 				router_links[router].add(link)
 
 with open (localdir + '/link_timestamp') as f:

@@ -10,7 +10,7 @@ from collections import defaultdict
 ################################################
 # Delcaring and initializing needed variables. #
 ################################################
-localdir = '/ndn/ndn-status/named'
+localdir = '/home/ndnuser/ndn-status/named'
 router_prefixes	 = {}
 prefix_timestamp = {}
 link_timestamp 	 = {}
@@ -75,8 +75,8 @@ with open (localdir + '/links') as f:
                                 if not line: break
                                 if 'END' in line: break
 
-                                adj_router, face = line.split(':', 1)
-                                router_links[router].add((adj_router, face))
+                                adj_router = line
+                                router_links[router].add(adj_router)
 		
 with open (localdir + '/link_timestamp') as f:
 	for line in f:
@@ -147,19 +147,19 @@ for cur in directory:
 						extra, run = line.split('No of Link: ', 1)
 
 						for i in range(0, int(run)):
-							for j in range(0, 4):
+							for j in range(0, 3):
 								line = (f.readline()).rstrip()
 								
 								if 'Adjacent Router:' in line:
 									extra, adj_router = line.split('Router: ', 1)
-								elif 'Connecting Face:' in line:
-									extra, face = line.split('Face: ', 1)
+								#elif 'Connecting Face:' in line:
+								#	extra, face = line.split('Face: ', 1)
 
 							if router and adj_router:
 								if action == 'add':
-									router_links[router].add((adj_router, face))
+									router_links[router].add(adj_router)
 								elif action == 'del':
-									router_links[router].remove((adj_router, face))
+									router_links[router].remove(adj_router)
 
 				link_timestamp[router] = timestamp
 
@@ -179,8 +179,8 @@ with open (localdir + '/links', 'w') as f:
 
 	for router, linkinfo in router_links.items():
 		f.write('Router:' + router + '\n')
-		for adj_router, face in linkinfo:
-			f.write(adj_router + ':' + face + '\n')
+		for adj_router in linkinfo:
+			f.write(adj_router + '\n')
 
 		f.write('END\n')
 
