@@ -8,7 +8,6 @@ import socket
 import smtplib
 import time
 import sys
-import multiprocessing
 
 from email.header import Header
 from email.utils import formataddr
@@ -19,7 +18,7 @@ from collections import defaultdict
 # Variables. #
 ##############
 COMMASPACE = ', '
-LOCAL_DIR = '/home/ndnmonitor/LogScripts'
+LOCAL_DIR = '/ndn/ndn-status/named'
 FROM = formataddr((str(Header(u'Adam Alyyan', 'utf-8')), 'aalyyan@memphis.edu'))
 
 CC_LIST = []
@@ -28,7 +27,7 @@ CC_LIST = [cc1]#, cc2, cc3, cc4, cc5]
 
 host_name = {}
 routers = {}
-links	= set()
+links = set()
 topology = set()
 contact_list = defaultdict(list)
 
@@ -46,9 +45,9 @@ def send(router, _type):
 	if isinstance(router, tuple):
 		router = router[0]
 
-	toLog('Sending email to: ' + host_name[router])
+	toLog('Sending email to: ' + router)
 
-	message.append('Dear Operator of ' + host_name[router] + ',\n\n')
+	message.append('Dear Operator of ' + router + ',\n\n')
 
 	if _type == 'prefix':
 		message.append('The status page has detected that the prefix')
@@ -65,7 +64,7 @@ def send(router, _type):
 		down = no_link[router]
 	
 		for link in down:
-			message.append('- ' + host_name[link] + '.\n');
+			message.append('- ' + link + '.\n');
 
 		message.append('\nThis message is repeated once every 24 hours until')
                 message.append(' the problem is fixed. If you have any questions,')
@@ -76,32 +75,26 @@ def send(router, _type):
 	msg = MIMEText(message)
 
 	# Set the header information.
-	sendto = contact_list[router]
+	#sendto = contact_list[router]
 	SEND_LIST = []
-	for element in sendto:
-		address = element[0]
-		name = element[1]
-		toLog('Recipient: ' + name + ', ' + address)
-		temp = formataddr((str(Header(name, 'utf-8')), address))
-		SEND_LIST.append(temp)
+	#for element in sendto:
+	address = 'aalyyan@memphis.edu'
+	name = 'Adam Alyyan'
+	toLog('Recipient: ' + name + ', ' + address)
+	temp = formataddr((str(Header(name, 'utf-8')), address))
+	SEND_LIST.append(temp)
 
-	msg['Subject'] = _type.title() + ' down - ' + host_name[router]
+	msg['Subject'] = _type.title() + ' down - ' + router
 	msg['From'] = FROM
 	msg['To'] = COMMASPACE.join(SEND_LIST)
 	msg['cc'] = COMMASPACE.join(CC_LIST)
 
 	# Send the email using UoM mail server.
-	#s = smtplib.SMTP('localhost')
-	#s.sendmail(FROM, SEND_LIST+CC_LIST, msg.as_string())
+	s = smtplib.SMTP('mta.memphis.edu', 25)
+	s.sendmail(FROM, SEND_LIST+CC_LIST, msg.as_string())
 	s.quit()
 
-	toLog('Email successfully sent to: ' + host_name[router])
-
-##############################
-# Function to get host name. #
-##############################
-def lookup(host, q):
-        q.put(socket.gethostbyaddr(host))
+	toLog('Email successfully sent to: ' + router)
 
 #####################################################################
 # Open prefix, links, contact list,  and topology file to get data. #
@@ -126,45 +119,10 @@ with open(LOCAL_DIR + '/links') as f:
 				if not line: break
 				if 'END' in line: break
 
-				link, extra = line.split(':', 1)
-				links.add((router, link))
+				link = line.split(':', 1)
+				links.add((router, link[0]))
 
 with open(LOCAL_DIR + '/topology') as f:
-	while 1:
-                line = (f.readline()).rstrip()
-                if not line: break
-
-                if 'Router' in line:
-                        extra, router = line.split(':', 1)
-
-                        if router == '64.57.23.210':
-                                router_name = 'sppsalt1.arl.wustl.edu'
-                        elif router == '64.57.23.178':
-                                router_name = 'sppkans.arl.wustl.edu'
-                        elif router == '64.57.23.194':
-                                router_name = 'sppwash1.arl.wustl.edu'
-                        elif router == '64.57.19.226':
-                                router_name = 'sppatla1.arl.wustl.edu'
-                        elif router == '64.57.19.194':
-                                router_name = 'spphous1.arl.wustl.edu'
-                        elif router == '162.105.146.26':
-                                router_name = '162.105.146.26'
-                        else:
-				q = multiprocessing.Queue()
-                                p = multiprocessing.Process(target=lookup, args=(router, q))
-                                p.start()
-                                p.join(1)
-
-                                if p.is_alive:
-                                        p.terminate()
-                                        p.join()
-
-                                if not q.empty():
-                                        router_name = (q.get())[0]
-                                else:
-                                        router_name = router
-
-                        host_name[router] = router_name
 	f.seek(0)
 
         while 1:
@@ -181,17 +139,6 @@ with open(LOCAL_DIR + '/topology') as f:
 
                                 link, extra = line.split(':', 1)
                                 topology.add((router, link))
-
-with open(LOCAL_DIR + '/list.txt') as f:
-	for line in f:
-		contact = []
-
-		line = line.rstrip()
-		router, info = line.split('>', 1)
-		
-		contact = info.split(':')
-		contact = zip(contact[0::2], contact[1::2])
-		contact_list[router] = contact	
 
 ################################################
 # Determine which links and prefixes are down. #
@@ -235,4 +182,3 @@ for router in no_link.keys():
 	send(router, 'link')
 
 toLog('Instance ended.\n\n')
-
