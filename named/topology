@@ -34,7 +34,7 @@ Router:/ndn/memphis.edu/cs/vesta
 END
 Router:/ndn/arizona.edu/cs/mojo
 /ndn/memphis.edu/cs/altair:Red
-/ndn/ucla
+/ndn/ucla:Red
 END
 Router:/ndn/ucla
 /ndn/arizona.edu/cs/mojo:Red

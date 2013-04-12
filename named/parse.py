@@ -159,7 +159,10 @@ for cur in directory:
 								if action == 'add':
 									router_links[router].add(adj_router)
 								elif action == 'del':
-									router_links[router].remove(adj_router)
+									try:
+										router_links[router].remove(adj_router)
+									except:
+										pass
 
 				link_timestamp[router] = timestamp
 

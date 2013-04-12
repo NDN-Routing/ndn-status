@@ -18,7 +18,7 @@ from collections import defaultdict
 # Variables. #
 ##############
 COMMASPACE = ', '
-LOCAL_DIR = '/ndn/ndn-status/named'
+LOCAL_DIR = '/home/ndnuser/ndn-status/named'
 FROM = formataddr((str(Header(u'Adam Alyyan', 'utf-8')), 'aalyyan@memphis.edu'))
 
 CC_LIST = []
