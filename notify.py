@@ -207,6 +207,12 @@ no_prefix = list(no_prefix)
 
 temp = defaultdict(set)
 
+for node in no_prefix:
+	if 'netlogic' in host_name[node] or '141.225.11.150' in node:
+		send(node, 'prefix')
+		print 'netlogic found. Terminating'
+		sys.exit(0)
+
 for router, link in no_link:
 	add = True
 
