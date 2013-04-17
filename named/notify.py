@@ -90,9 +90,9 @@ def send(router, _type):
 	msg['cc'] = COMMASPACE.join(CC_LIST)
 
 	# Send the email using UoM mail server.
-	s = smtplib.SMTP('mta.memphis.edu', 25)
-	s.sendmail(FROM, SEND_LIST+CC_LIST, msg.as_string())
-	s.quit()
+	#s = smtplib.SMTP('mta.memphis.edu', 25)
+	#s.sendmail(FROM, SEND_LIST+CC_LIST, msg.as_string())
+	#s.quit()
 
 	toLog('Email successfully sent to: ' + router)
 
@@ -166,6 +166,10 @@ for router, link in no_link:
 		temp[router].add(link)
 
 no_link = temp
+
+print no_prefix
+
+print no_link
 
 ####################
 # Send out emails. #
