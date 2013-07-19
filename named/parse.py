@@ -47,7 +47,7 @@ with open (localdir + '/parse.conf') as f:
 
 		if 'lastbyte' in line:
 			keyword, value = line.split('=', 1)
-                        lastbyte = int(value)
+                        lastbyte = int(0)
                         continue
 
 ###################################
@@ -106,13 +106,15 @@ for cur in directory:
 			if not line: break
 
 			left, extra, right = line.partition(':')
-			timestamp, extra = left.split('-', 1)
+			timestamp, extra = left.split(' ', 1)
 			line = right
 
 			if 'Name-LSA' in line:
 				while (not 'name_lsa_end' in line):
 					line = (f.readline()).rstrip()
 					if not line: break
+
+					print line
 
 					if 'Name Prefix:' in line:
 						extra, prefix = line.split('Name Prefix: ', 1)
