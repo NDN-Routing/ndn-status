@@ -108,7 +108,8 @@ for cur in directory:
 			line = (f.readline()).rstrip()
 			if not line: break
 
-			left, right = line.split(':', 1)
+			#left, right = line.split(':')
+			left, extra, right = line.partition(':')
 			timestamp, extra = left.split('-', 1)
 			line = right
 
@@ -120,7 +121,6 @@ for cur in directory:
 
 					if 'Advertising Router' in line:
 						extra, router = line.split('Router ', 1)
-					# The case matters here and is required. Log files are wierd!
 					elif 'name prefix:' in line:
 						extra, prefix = line.split('prefix: ', 1)
 					elif 'Name Prefix:' in line:
@@ -191,3 +191,4 @@ with open (localdir + '/parse.conf', 'w') as f:
 	f.write('timezone=' + timezone + '\n')
 	end = time.time() - start
 	f.write('timetaken=' + str(end) + '\n')
+
