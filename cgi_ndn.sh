@@ -1,3 +1,3 @@
 #!/bin/bash
-python /home/ndnmonitor/LogScripts/parse.py
-python /home/ndnmonitor/LogScripts/process_ndn.py
+python /home/ndnmonitor/ndn-status/parse.py
+python /home/ndnmonitor/ndn-status/process_ndn.py
