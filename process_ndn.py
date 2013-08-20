@@ -101,7 +101,7 @@ def prefix_json():
 			if not prefix_timestamp.has_key(prefix):
                                 timestamp = '-'
 			else:
-				timestamp = time.asctime(time.localtime(float(prefix_timestamp[prefix]))) + ' ' + timezone
+				timestamp = prefix_timestamp[prefix]
 
 			publish.append('{"prefix":"' + prefix + '",')
 			publish.append('"timestamp":"' + timestamp + '",')
@@ -127,7 +127,7 @@ def link_json():
 		if not link_timestamp.has_key(router):
 			timestamp = '-'
 		else:
-			timestamp = time.asctime(time.localtime(float(link_timestamp[router]))) + ' ' + timezone
+			timestamp = link_timestamp[router]
 	
 		publish.append('{"router":"' + router + '",')
 		publish.append('"timestamp":"' + timestamp + '",')
@@ -140,9 +140,6 @@ def link_json():
                         	status = 'Offline'
                 	elif topology[router, link] == 'skyblue':
                         	status = 'notintopology'
-
-                	if status == 'Online' and float(time.time() - (float(link_timestamp[link]))) > 2400:
-                        	status = 'Out-of-date'
 
 			publish.append('{"link":"' + link + '",')
 			publish.append('"status":"' + status + '"}')
