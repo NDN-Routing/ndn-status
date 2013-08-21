@@ -128,7 +128,7 @@ def link_json():
 		if not link_timestamp.has_key(router):
 			timestamp = '-'
 		else:
-			timestap = link_timestamp[router]
+			timestamp = link_timestamp[router]
 			#timestamp = time.asctime(time.localtime(float(link_timestamp[router]))) + ' ' + timezone
 	
 		publish.append('{"router":"' + router + '",')
@@ -142,9 +142,6 @@ def link_json():
                         	status = 'Offline'
                 	elif topology[router, link] == 'skyblue':
                         	status = 'notintopology'
-
-                	if status == 'Online' and float(time.time() - (float(link_timestamp[link]))) > 2400:
-                        	status = 'Out-of-date'
 
 			publish.append('{"link":"' + link + '",')
 			publish.append('"status":"' + status + '"}')
