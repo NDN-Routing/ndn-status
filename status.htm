@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+
+<head>
+	<title>NDN &middot Routing</title>
+
+	 <!-- JavaScript plugins (requires jQuery) -->
+        <script src="http://code.jquery.com/jquery.js"></script>
+
+	<!-- Bootstrap -->
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc2/css/bootstrap.min.css"> 
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc2/js/bootstrap.min.js"></script>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<style>
+		body { padding-top: 80px; }
+		.container { padding-left, padding-right: 10px; }
+		.info-box { height: 250px; }
+		.tablet { width: 150px; }
+		.unavailable { background-color: #DFF6FE; }
+		.hidden { diplay: none;}
+		.table-borderless td, .table-borderless th { border: 0 !important; }
+		.alert-home { padding-bottom: 20px; }
+		#advertisedPrefixes, #linkStatus { padding-top: 30px; }
+
+		thead { font-weight: bold; }
+
+		td.success { color: #347235; font-weight: bold; }
+		td.danger { color: #990012; font-weight: bold; }
+ 		td.unavailable { color: #79BAEC; font-weight: bold; }
+		td.warning { color: #EDDA74; font-weight: bold; }
+
+		.down { color: #eee; text-align: center; font-size: 1600%; }
+	</style>
+
+</head>
+
+<body>
+	<header class="navbar navbar-fixed-top bs-docs-nav" role="banner">
+  		<div class="container">
+    			<div class="navbar-header">
+      				<button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+        				<span class="sr-only">Toggle navigation</span>
+        				<span class="icon-bar"></span>
+        				<span class="icon-bar"></span>
+        				<span class="icon-bar"></span>
+      				</button>
+      
+				<a href="home.html" class="navbar-brand">NDN &middot Routing</a>
+    			</div>
+    
+			<nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+      				<ul class="nav navbar-nav">
+        				<li class="active"><a href="status.htm">Status</a></li>
+      				</ul>
+    			</nav>
+  		</div>
+	</header>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12 alert-home">
+				<div class="loader">
+					<h4 class="text-center">Loading status via NDN.js</h4>
+		
+					<div class="progress progress-striped active">
+ 						 <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+    							<span class="sr-only">100% Complete</span>
+					  	</div>
+					</div>
+				</div>
+
+				<div class="alert-message">
+				</div>
+			</div>	
+		</div>
+		
+		<div class="row">
+			<div class="col-md-6">
+				<div class="panel info-box">
+					<div class="panel-heading">Status information</div>
+					<div class="panel-body">
+						<table class="table table-borderless">
+							<tbody>	
+								<tr><td>Page last updated:</td><td id="lastupdated">-</td></tr>
+								<tr><td>Last log processed:</td><td id="lastlog">-</td></tr>
+								<tr><td>Last timestamp in log:</td><td id="lasttimestamp">-</td></tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-6">
+				<div class="panel info-box">
+					<div class="panel-heading">Status key</div>
+					<div class="panel-body">
+						<table class="table table-borderless">
+							<tbody>
+								<tr><td class="success tablet"></td><td>Online</td></tr>
+								<tr><td class="danger"></td><td>Offline</td></tr>
+								<tr><td class="warning"></td><td>Out-of-date, no update for 40 min</td></tr>
+								<tr><td class="unavailable"></td><td>Online, but not-in-topo (NPT)</td></tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<hr />
+
+		<div class="row">
+			<ul class="myTab nav nav-tabs nav-justified">
+        			<li class="active"><a href="#advertisedPrefixes" data-toggle="tab">Advertised Prefixes</a></li>
+        			<li class><a href="#linkStatus" data-toggle="tab">Link Status</a></li>
+      			</ul>
+
+			<div class="col-md-12 tab-content" id="myTabContent">
+				<div class="tab-pane fade active in" id="advertisedPrefixes">
+				</div>
+
+				<div class="tab-pane fade" id="linkStatus">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<footer class="bs-footer">
+		<div class="container">
+		</div>
+	</footer>
+
+	<script type="text/javascript" src="js/ndn-js.js"></script>
+	<script src="js/init.js"></script>
+    <script src="js/get.js"></script>
+
+    <script>
+    	// Enables the tabs to work
+		$('#myTab a').click(function (e) {
+			e.preventDefault()
+			$(this).tab('show')
+		})
+    </script>
+</body>
+
+</html>
