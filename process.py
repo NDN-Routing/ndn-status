@@ -9,13 +9,14 @@ import time
 import pyccn
 import multiprocessing
 from collections import defaultdict
+from pprint import pprint
 
 start = time.time()
 
 ################################################
 # Delcaring and initializing needed variables. #
 ################################################
-localdir = '/home/ndnmonitor/LogScripts'
+localdir = '/home/ndnmonitor/tmp/ndn-status'
 
 links_list = []
 publish = []
@@ -102,7 +103,6 @@ def prefix_json():
                                 timestamp = '-'
 			else:
 				timestamp = prefix_timestamp[prefix]
-				#timestamp = time.asctime(time.localtime(float(prefix_timestamp[prefix]))) + ' ' + timezone
 
 			publish.append('{"prefix":"' + prefix + '",')
 			publish.append('"timestamp":"' + timestamp + '",')
@@ -119,23 +119,38 @@ def prefix_json():
 	put.start()
 	del publish[:]
 
+def to_search():
+	links = set
+	for router, links in set_topology.items():
+		for link in links:
+			if topology[router, link] == 'Red':
+				router_links[router].add(link)
+	return router_links
+
 def link_json():
 	links = set
 	status = ''
-	search = dict(router_links.items() + set_topology.items())
+	search = to_search()
+	#search = dict(router_links.items() + set_topology.items())
+
+	pprint(set_topology.items())
+	print '\n\n'
+	pprint(router_links.items())
+	
 
 	for router, links in sorted(search.items()):
+		print router, links, '\n'
 		if not link_timestamp.has_key(router):
 			timestamp = '-'
 		else:
 			timestamp = link_timestamp[router]
-			#timestamp = time.asctime(time.localtime(float(link_timestamp[router]))) + ' ' + timezone
 	
 		publish.append('{"router":"' + router + '",')
 		publish.append('"timestamp":"' + timestamp + '",')
 		publish.append('"links":[')
 
 		for link in links:
+			print router, link, topology[router, link]
 			if topology[router, link] == 'lime':
                         	status = 'Online'
                 	elif topology[router, link] == 'Red':
@@ -163,12 +178,13 @@ def process_topo():
 	for router, links in router_links.items():
 		for link in links:
 			if not topology.has_key((router, link)):
+				print router, link
 				topology[router, link] = 'skyblue'
 			else:
 				topology[router, link] = 'lime'
 
 #############################################################################################
-# Read the configuration file to find the last file timestamp, last timestamp and timezone. #
+# Read the configuration file to find the last file timestamp, last timestamp 
 #############################################################################################
 with open (localdir + '/parse.conf') as f:
         for line in f:
@@ -185,18 +201,13 @@ with open (localdir + '/parse.conf') as f:
                         lasttimestamp = value
                         continue
 
-                if 'timezone' in line:
-                        keyword, value = line.split('=', 1)
-                        timezone = value
-                        continue
-
 		if 'timetaken' in line:
 			keyword, value = line.split('=', 1)
 			timetaken = value
 			continue
 
-curtime = time.asctime(time.localtime(time.time())) + ' ' + timezone
-timestamp = time.asctime(time.localtime(float(lasttimestamp))) + ' ' + timezone
+curtime = time.asctime(time.localtime(time.time()))
+timestamp = time.asctime(time.localtime(float(lasttimestamp)))
 
 publish.append('{"lastlog":"' + lastfile + '",')
 publish.append('"lasttimestamp":"' + timestamp + '",')

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import os
+
 parse = []
 process = []
 notify = []
@@ -18,7 +20,6 @@ with open('notify.py') as f:
 
 localdir = raw_input('Enter local directroy (do not include the trailing /\n>> ')
 logdir = raw_input('Enter the log directory (do not include the trailing /\n>> ')
-timezone = raw_input('Enter your timezone (i.e. CST)\n>> ')
 
 with open('parse.py', 'w') as f:
 	for line in parse:
@@ -46,9 +47,6 @@ with open('parse.conf', 'w') as f:
 	f.write('lastfile=0\n')
 	f.write('lasttimestamp=0\n')
 	f.write('lastbyte=0\n')
-	f.write('timezone=' + timezone + '\n')
 	f.write('timetaken=0\n')
 
-f = open('links', 'w').close()
-f = open('link_timestamp', 'w').close()
-f = open('prefix', 'w').close()
+os.system("touch prefix links link_timestamp")

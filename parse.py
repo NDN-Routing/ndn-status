@@ -12,7 +12,7 @@ start = time.time()
 ################################################
 # Delcaring and initializing needed variables. #
 ################################################
-localdir = '/home/ndnmonitor/LogScripts'
+localdir = '/home/ndnmonitor/tmp/ndn-status'
 
 router_prefixes	 = {}
 prefix_timestamp = {}
@@ -42,11 +42,6 @@ with open (localdir + '/parse.conf') as f:
 			keyword, value = line.split('=', 1)
                         lasttimestamp = value
                         continue
-
-		if 'timezone' in line:
-			keyword, value = line.split('=', 1)
-                        timezone = value
-                        continue	
 
 		if 'lastbyte' in line:
 			keyword, value = line.split('=', 1)
@@ -164,6 +159,9 @@ for cur in directory:
 ################
 # Update files #
 ################
+print router_prefixes
+print link_timestamp
+
 with open (localdir + '/prefix', 'w') as f:
 	for prefix, router in router_prefixes.items():
 		timestamp = prefix_timestamp[prefix]
@@ -188,7 +186,6 @@ with open (localdir + '/parse.conf', 'w') as f:
 	f.write('lastfile=' + directory[-1] + '\n')
 	f.write('lasttimestamp=' + lasttimestamp + '\n')
 	f.write('lastbyte=' + str(lastbyte) + '\n')
-	f.write('timezone=' + timezone + '\n')
 	end = time.time() - start
 	f.write('timetaken=' + str(end) + '\n')
 
