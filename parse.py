@@ -48,120 +48,117 @@ with open (localdir + '/parse.conf') as f:
                         lastbyte = int(value)
                         continue
 
-###################################
-# Read in prefix and links files. #
-###################################
-with open (localdir + '/prefix') as f:
-	for line in f:
-		line = line.rstrip()
-		if not line: break
-		
-		prefix, router, timestamp = line.split(':', 2)
-		router_prefixes[prefix] = router
-		prefix_timestamp[prefix] = timestamp
-		
-with open (localdir + '/links') as f:
-        while 1:
-                line = (f.readline()).rstrip()
-		if not line: break
-
-                if 'Router' in line:
-                        extra, router = line.split(':', 1)
-
-                        while not 'END' in line:
-                                line = (f.readline()).rstrip()
-                                if not line: break
-                                if 'END' in line: break
-
-                                linkID, linkdata = line.split(':', 1)
-                                router_links[router].add((linkID, linkdata))
-
-with open (localdir + '/link_timestamp') as f:
-	for line in f:
-		line = line.rstrip()
-		if not line: break
-		
-		router, timestamp = line.split(':', 1)
-		link_timestamp[router] = timestamp
-
 # Read in names of all files in the log directory and add them to the file array.
 directory = os.listdir(logdir)
 directory.sort();
+cur = directory[-1]
 
-######################################################################################
-# Starting with the last file read, jump to the last read byte and continue parsing. #
-######################################################################################
-for cur in directory:
-	if lastfilestamp > cur.rstrip('.log'):
-		continue
-	
-	with open (logdir + '/' + cur) as f:
-		if lastfilestamp == cur.rstrip('.log'):
-                	f.seek(lastbyte)
-
-		while 1:
-			line = (f.readline()).rstrip()
+# If the last filestamp is equal to the current one
+# Load the data, else skip this since it's a new log file
+if lastfilestamp == cur.rstrip('.log'):
+	###################################
+	# Read in prefix and links files. #
+	###################################
+	with open (localdir + '/prefix') as f:
+		for line in f:
+			line = line.rstrip()
+			if not line: break
+			
+			prefix, router, timestamp = line.split(':', 2)
+			router_prefixes[prefix] = router
+			prefix_timestamp[prefix] = timestamp
+			
+	with open (localdir + '/links') as f:
+	        while 1:
+	                line = (f.readline()).rstrip()
 			if not line: break
 
-			#left, right = line.split(':')
-			left, extra, right = line.partition(':')
-			timestamp, extra = left.split('-', 1)
-			line = right
+	                if 'Router' in line:
+	                        extra, router = line.split(':', 1)
 
-			# Warning: there is a double space!
-			if 'Opaque Type  236' in line:
-				while (not 'lsa_read called' in line) and (not 'ospfnstop' in line):
-					line = (f.readline()).rstrip()
-					if not line: break
+	                        while not 'END' in line:
+	                                line = (f.readline()).rstrip()
+	                                if not line: break
+	                                if 'END' in line: break
 
-					if 'Advertising Router' in line:
-						extra, router = line.split('Router ', 1)
-					elif 'name prefix:' in line:
-						extra, prefix = line.split('prefix: ', 1)
-					elif 'Name Prefix:' in line:
-						extra, prefix = line.split('Prefix: ', 1)
-					elif 'Update_name_opaque_lsa called' in line:
-						action = 'add'
-					elif 'Delete _name opaque lsa called' in line:
-						action = 'del'
+	                                linkID, linkdata = line.split(':', 1)
+	                                router_links[router].add((linkID, linkdata))
 
-				if router and prefix:
-					# Process the action
-					if action == 'add':
-						router_prefixes[prefix] = router
-						prefix_timestamp[prefix] = timestamp
-					elif action == 'del' and router_prefixes.has_key(prefix):
-						del router_prefixes[prefix]
-						prefix_timestamp[prefix] = timestamp
+	with open (localdir + '/link_timestamp') as f:
+		for line in f:
+			line = line.rstrip()
+			if not line: break
+			
+			router, timestamp = line.split(':', 1)
+			link_timestamp[router] = timestamp
 
-			elif 'router-LSA' in line:
-				while (not 'lsa_read called' in line) and (not 'ospfnstop' in line):
-					line = (f.readline()).rstrip()
-					if not line: break
+######################################################################################
+# Load last file read, jump to the last read byte and continue parsing. #
+######################################################################################
+with open (logdir + '/' + cur) as f:
+	if lastfilestamp == cur.rstrip('.log'):
+		f.seek(lastbyte)
 
-					if 'Advertising Router' in line:
-						extra, router = line.split('Router ', 1)
-						router_links[router].clear()
-					elif 'Link ID' in line:
-						extra, linkID = line.split('Link ID ', 1)
-					elif 'Link Data' in line:
-						extra, linkdata = line.split('Link Data ', 1)
-					elif 'Type' in line:
-						extra, _type = line.split('Type ')
-						if _type == '1':
-							router_links[router].add((linkID, linkdata))
+	while 1:
+		line = (f.readline()).rstrip()
+		if not line: break
 
-				link_timestamp[router] = timestamp
+		#left, right = line.split(':')
+		left, extra, right = line.partition(':')
+		timestamp, extra = left.split('-', 1)
+		line = right
 
-		lasttimestamp = timestamp
-		lastbyte = f.tell()
+		# Warning: there is a double space!
+		if 'Opaque Type  236' in line:
+			while (not 'lsa_read called' in line) and (not 'ospfnstop' in line):
+				line = (f.readline()).rstrip()
+				if not line: break
+
+				if 'Advertising Router' in line:
+					extra, router = line.split('Router ', 1)
+				elif 'name prefix:' in line:
+					extra, prefix = line.split('prefix: ', 1)
+				elif 'Name Prefix:' in line:
+					extra, prefix = line.split('Prefix: ', 1)
+				elif 'Update_name_opaque_lsa called' in line:
+					action = 'add'
+				elif 'Delete _name opaque lsa called' in line:
+					action = 'del'
+
+			if router and prefix:
+				# Process the action
+				if action == 'add':
+					router_prefixes[prefix] = router
+					prefix_timestamp[prefix] = timestamp
+				elif action == 'del' and router_prefixes.has_key(prefix):
+					del router_prefixes[prefix]
+					prefix_timestamp[prefix] = timestamp
+
+		elif 'router-LSA' in line:
+			while (not 'lsa_read called' in line) and (not 'ospfnstop' in line):
+				line = (f.readline()).rstrip()
+				if not line: break
+
+				if 'Advertising Router' in line:
+					extra, router = line.split('Router ', 1)
+					router_links[router].clear()
+				elif 'Link ID' in line:
+					extra, linkID = line.split('Link ID ', 1)
+				elif 'Link Data' in line:
+					extra, linkdata = line.split('Link Data ', 1)
+				elif 'Type' in line:
+					extra, _type = line.split('Type ')
+					if _type == '1':
+						router_links[router].add((linkID, linkdata))
+
+			link_timestamp[router] = timestamp
+
+	lasttimestamp = timestamp
+	lastbyte = f.tell()
 
 ################
 # Update files #
 ################
-print router_prefixes
-print link_timestamp
-
 with open (localdir + '/prefix', 'w') as f:
 	for prefix, router in router_prefixes.items():
 		timestamp = prefix_timestamp[prefix]
