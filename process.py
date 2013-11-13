@@ -17,6 +17,7 @@ start = time.time()
 # Delcaring and initializing needed variables. #
 ################################################
 localdir = '/home/ndnmonitor/tmp/ndn-status'
+pubprefix = '/ndn/memphis.edu/netlab/status'
 
 links_list = []
 publish = []
@@ -115,7 +116,7 @@ def prefix_json():
 	del publish[-1]
 
 	data = ''.join(publish)
-	put = ccnput('/ndn/memphis.edu/netlab/status/prefix', data)
+	put = ccnput("/".join([pubprefix, 'prefix']), data)
 	put.start()
 	del publish[:]
 
@@ -131,15 +132,8 @@ def link_json():
 	links = set
 	status = ''
 	search = to_search()
-	#search = dict(router_links.items() + set_topology.items())
-
-	pprint(set_topology.items())
-	print '\n\n'
-	pprint(router_links.items())
 	
-
 	for router, links in sorted(search.items()):
-		print router, links, '\n'
 		if not link_timestamp.has_key(router):
 			timestamp = '-'
 		else:
@@ -150,7 +144,6 @@ def link_json():
 		publish.append('"links":[')
 
 		for link in links:
-			print router, link, topology[router, link]
 			if topology[router, link] == 'lime':
                         	status = 'Online'
                 	elif topology[router, link] == 'Red':
@@ -168,7 +161,7 @@ def link_json():
 	del publish[-1]
 
 	data = ''.join(publish)
-        put = ccnput('/ndn/memphis.edu/netlab/status/link', data)
+        put = ccnput("/".join([pubprefix, 'link']), data)
         put.start()
         del publish[:]
 
@@ -213,7 +206,7 @@ publish.append('{"lastlog":"' + lastfile + '",')
 publish.append('"lasttimestamp":"' + timestamp + '",')
 publish.append('"lastupdated":"' + curtime + '"}')
 data = ''.join(publish)
-put = ccnput('/ndn/memphis.edu/netlab/status/metadata', data)
+put = ccnput("/".join([pubprefix, 'metadata']), data)
 put.start()
 del publish[:]
 
