@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+import os
+
+execute = []
+ospfnCheck = []
+init = []
+
+with open('scripts/execute.php') as f:
+	for line in f:
+		execute.append(line)
+
+with open('scripts/ospfnCheck.php') as f:
+	for line in f:
+		ospfnCheck.append(line)
+
+with open('js/init.js') as f:
+	for line in f:
+		init.append(line)
+
+ssh = raw_input('Enter the ssh details to the remote machine (i.e. user@machine.edu)\n>> ')
+path = raw_input('Enter the path to cloned directory on remote machine\n>> ')
+host = raw_input('Enter IP of the node hosting ospfn:\n>> ')
+pubprefix = raw_input('Enter the prefix the data is published under (i.e. /ndn/netlab/status)\n>> ')
+
+with open('scripts/execute.php', 'w') as f:
+	for line in execute:
+		if 'exec' in line:
+			f.write('exec(\'ssh ' + ssh + ' ' + path + '/run.sh\');\n');
+		else:
+			f.write(line)
+
+with open('scripts/ospfnCheck.php', 'w') as f:
+	for line in ospfnCheck:
+		if 'exec' in line:
+			f.write('echo shell_exec("ssh ' + ssh + ' pgrep ospfn || echo Down");\n')
+		else:
+			f.write(line)
+
+with open('js/init.js', 'w') as f:
+	for line in init:
+		if 'hostip =' in line:
+			f.write('hostip = "' + host + '";\n')
+		elif 'pubprefix =' in line:
+			f.write('pubprefix = "/ndn/memphis.edu/netlab/status";\n')
+		else:
+			f.write(line)

@@ -6,6 +6,7 @@
 */
 
 hostip = "141.225.11.150";
+pubprefix = "/ndn/memphis.edu/netlab/status";
 var ndn;
 
 // Enables the tabs to work
@@ -62,7 +63,7 @@ function getStatus(name) {
 
 	// Retrieve the interest using the status name with a specifier appended to the end
 	// to specify what content we want
-	ndn.expressInterest(new Name("/ndn/memphis.edu/netlab/status/" + name), new AsyncGetClosure(), interest);
+	ndn.expressInterest(new Name(pubprefix + "/" + name), new AsyncGetClosure(), interest);
 }
 
 $(document).ready(function() {
