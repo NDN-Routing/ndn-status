@@ -281,8 +281,12 @@ with open (localdir + '/prefix') as f:
                 prefix, router, timestamp = line.split(':', 2)
 
 		if router not in host_name.keys():
-			router_name, extra1, extra2 = socket.gethostbyaddr(router)
-			host_name[router] = router_name
+			try:
+				router_name, extra1, extra2 = socket.gethostbyaddr(router)
+				host_name[router] = router_name
+	
+			except:
+				pass
 		else:
 			router_name = host_name[router]
 
@@ -310,8 +314,11 @@ with open (localdir + '/links') as f:
                                 linkID, extra = line.split(':', 1)
 
 				if linkID not in host_name.keys():
-					link_name, extra1, extra2 = socket.gethostbyaddr(linkID)
-					host_name[linkID] = link_name
+					try:
+						link_name, extra1, extra2 = socket.gethostbyaddr(linkID)
+						host_name[linkID] = link_name
+					except:
+						pass
 				else:
                                 	link_name = host_name[linkID]
                                 
