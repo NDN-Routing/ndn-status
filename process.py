@@ -40,7 +40,7 @@ def lookup(host, q):
 ###################################
 # PyNDN Class to publish content. #
 ###################################
-class ccnput(pyNDN.Closure):
+class ccnput(pyndn.Closure):
         def __init__(self, name, content):
                 c = pyndn.NDN()
                 c.setRunTimeout(60000)
