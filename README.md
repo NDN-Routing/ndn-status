@@ -11,7 +11,8 @@ Dependencies
 To run the scripts, the following dependencies are required:
 
 * python2.7
-* pyccn
+* pyNDN
+* ndn.js(see other branch for details)
 * ccnx
 
 
