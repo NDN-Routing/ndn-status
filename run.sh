@@ -1,4 +1,4 @@
 #!/bin/bash
 
-python parse.py
-python process.py
+python /home/op_mhoque/ndn-status/parse.py
+python /home/op_mhoque/ndn-status/process.py

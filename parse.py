@@ -12,8 +12,8 @@ start = time.time()
 ################################################
 # Delcaring and initializing needed variables. #
 ################################################
-localdir = '/home/ndnmonitor/tmp/ndn-status'
-pubprefix = '/ndn/memphis.edu/netlab/status'
+localdir = '/home/op_mhoque/ndn-status'
+pubprefix = '/ndn/memphis.edu/status/'
 
 router_prefixes	 = {}
 prefix_timestamp = {}
