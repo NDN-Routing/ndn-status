@@ -1,4 +1,5 @@
 function prefix(str) {
+	console.log("Got data: " + str);
 	// Split up the JSON formatted data
 	var data = str.split("END");
 

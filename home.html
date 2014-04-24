@@ -1,0 +1,88 @@
+<html>
+<head>
+<meta charset="utf-8">
+<title>NDN · Routing Home</title>
+	<link href="http://fonts.googleapis.com/css?family=Rambla:400,700|Istok+Web:400,700" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" type="text/css" href="css/style.css" />
+
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+</head>
+<body>
+<script type="text/javascript">document.write('<div id="all">');</script>
+
+	<div id="top"></div>
+
+	<div id="contentwrapper">
+		<div id="header">
+			<div id="title">
+				<h1>NDN ·</span> <span id="grey">routing</span> <span id="blue">home</span></h1>
+			</div>
+			
+			<div id="navbar_blue">
+				<ul>
+					<li><a href="home.html" class="active">home</a></li>
+					<li><a href="status.htm">status</a></li>
+					<li><a href="html/operators.html">operators</a></li>
+					<li><a href="html/topology.html">topology</a></li>
+				</ul>
+			</div>
+		</div>
+
+		<div id="infodiv">
+			<div id="infodiv2">
+
+				<!--<div id="placeholder"></div>-->
+
+				<div class="titles"><p>Welcome</p></div>
+				<p>
+					This status page displays information of which routers are annoucning their prefixes and shows the status of each link between routers in the opology. This page also has links to the archive of topologies, a list of all operators at each router with contact information and an overview diagram of the whole network topology.
+				</p>
+
+				<div class="titles"><p>Brief Overview of NDN</p></div>
+				<p>
+					The <a href="http://www.named-data.net/">Named Data Networking (NDN)</a> architecture represents a fundamental
+					paradigm shift from the current Internet architecture. IP identifies
+					data using its location (an IP address). In NDN, the data consumer sends
+					out an Interest packet, which identifies the data that the consumer is seeking
+					by name. The response to an Interest packet in NDN is called a Data packet,
+					which carries both the full name and the data itself.
+				</p>
+
+				<div class="titles"><p>OSPFN</p></div>
+				<p>
+					In order to provide name-based routing capabilities in NDN, Open Shortest Path
+					First (OSPF) has been extended to distribute name prefixes and calculate routes to name
+					prefixes. This protocol is called OSPFN, and is currently deployed on the NDN testbed. The
+					status page allows us to see whether name prefixes are being displayed.
+				</p>
+
+				<div class="titles"><p>Developers</p></div>
+				<p>
+					OSPFN has been developed by A K M Mahmudal Hoque and Dr. Lan Wang of the University
+					of Memphis and Cheng Yi and Dr. Beichuan Zhang of the University of Arizona. The status pages
+					for monitoring the testbed were developed by Gus Sanders and are currently maintained by 
+					Adam Alyyan at the University of Memphis.
+				</p>
+			</div>
+
+			<div id="infodiv3">
+				<div class="titles"><p>More Information</p></div>
+				<div id="link1"><span class="boxtext"><a href="http://www.named-data.net">NDN Project Home</a></span></div>
+				<div id="link2"><span class="boxtext"><a href="http://www.named-data.net/techreport/TR003-OSPFN.pdf">OSPFN Technical Report</a></span></div>
+				<div id="link3"><span class="boxtext"><a href="https://github.com/NDN-Routing/OSPFN2.0">Checkout OSPFN code</a></span></div>
+			</div>
+		</div>	
+	</div>
+
+	<div id="leftcolumn"></div>
+	<div id="rightcolumn"></div>
+
+	<script type="text/javascript">document.write('</div>');</script>
+	<script>
+                 $(document).ready(function() {
+                 	$("#all").fadeIn(500);
+                 });
+        </script>
+</body>
+</html>
+

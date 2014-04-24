@@ -1,4 +1,4 @@
 <?php
-echo shell_exec("ssh ndnmonitor@netlogic.cs.memphis.edu pgrep ospfn || echo Down");
+echo shell_exec("ssh op_mhoque@titan.cs.memphis.edu pgrep ospfn || echo Down");
 ?>
 

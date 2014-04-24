@@ -1,0 +1,136 @@
+<html>
+<head>
+<meta charset="utf-8">
+<title>NDN · Routing · Process</title>
+	<link href="http://fonts.googleapis.com/css?family=Rambla:400,700|Istok+Web:400,700" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" type="text/css" href="css/modified.css" />
+
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+</head>
+<body>
+	<script type="text/javascript">document.write('<div id="all">');</script>
+	<div id="top2"></div>
+	
+	<div id="contentwrapper">
+		<div id="header">
+			<div id="title">
+				<h1>NDN ·</span> <span id="grey">routing</span> <span id="green"> process</span></h1>
+			</div>
+		
+			<div id="navbar">
+				<ul>
+					<strong><li><a href="status.htm" class="active">Return to status page <small>&gt&gt</small></a></li></strong>
+				</ul>
+			</div>
+		</div>
+
+		<div id="infodiv">
+			<div class="titles2"><p>How it works:</p></div>
+			<div id="information3">
+				<br />
+				<p id="grey">
+					Behind the scenes, a 2-phase process begins executing to generate and retrieve the status page content. Firstly, a script runs that publishes the status page content via <span id="green">PyCCN</span>. The second part of the process involves retrieving the content. Next, a WebSocket connection is established to the Memphis, Netlogic node. Via <span id="green">NDN.JS</span>, interest messages are produced to retrieve the status content. Once the content is retrieved, it is parsed and displayed. 
+				</p>
+				<p id="grey">
+					3 separate objects are generated, containing metadata regarding the log files, prefix status information, and link status information. These content objects can be obtained manually via the following prefixes:
+				</p>
+				<div id="code">
+					<table id="information3">
+						<tr>
+							<td id="green"><strong>/ndn/memphis.edu/netlab/status/metadata</strong></td>
+							<td>&nbsp;&nbsp;&nbsp;</td>
+							<td id="grey">Contains metadata, such as last log file process and last timestamp.</td>
+						</tr>
+						<tr>
+                                                        <td id="green"><strong>/ndn/memphis.edu/netlab/status/prefix</strong></td>
+                                                        <td>&nbsp;&nbsp;&nbsp;</td>
+                                                        <td id="grey">Contains status of all prefixes in the testbed.</td>
+                                                </tr>
+						<tr>
+                                                        <td id="green"><strong>/ndn/memphis.edu/netlab/status/link</strong></td>
+                                                        <td>&nbsp;&nbsp;&nbsp;</td>
+                                                        <td id="grey">Contains status of all links in the testbed.</td>
+                                                </tr>
+					</table>
+				</div>
+			</div>
+
+			<div class="titles2"><p>Format of the content:</p></div>
+			<div id="information3">
+				<p id="grey">
+					All content data is formatted as JSON. This keeps the data in a concise and readable format. It is also easily parseable with built-in JavaScript functions. Below is a sample of the format for the 3 above content objects: 
+				</p>
+
+				<p><strong>Metadata:</strong></p>
+				<div id="code">
+					<pre id="green">
+{
+    "lastlog":"name of log file",
+    "lasttimestamp":"last timestamp processed",
+    "lastupdated":"time the content was added"
+}
+</pre>
+				</div>
+	
+				<p><strong>Prefix:</strong></p>
+				<div id="code">
+					<pre id="green">
+{
+   	"router":"router-name",
+    	"prefixes": [
+        	{
+            		"prefix":"prefix1",
+            		"timestamp":"prefix-timestamp",
+            		"status":"online|offline|out-of-date|not-in-topology"
+        	},
+        	{
+            		"prefix":"prefix2",
+            		"timestamp":"prefix-timestamp",
+            		"status":"online|offline|out-of-date|not-in-topology"
+        	}
+    	]
+}
+END <span id="grey">// Each prefix is delimeted by "END"</span>
+</pre>
+				</div>
+
+				<p><strong>Link:</strong></p>
+				<div id="code">
+					<pre id="green">
+{
+    "router":"router-name",
+    "timestamp":"link-timestamp", <span id="grey">// One timestamp is shared for all links</span>
+    "links": [
+        {
+            "link":"router-name 1",
+            "status":"online|offline|out-of-date|not-in-topology"
+        },
+        {
+            "link":"router-name 2",
+            "status":"online|offline|out-of-date|not-in-topology"
+        },
+        {
+            "link":"router-name 3",
+            "status":"online|offline|out-of-date|not-in-topology"
+        }
+    ]
+}
+END <span id="grey">// Each link is delimeted by "END"</span>
+</pre>
+				</div>
+			</div>		
+		</div>	
+	</div>
+
+	<div id="leftcolumn"></div>
+	<div id="rightcolumn"></div>
+
+	<script type="text/javascript">document.write('</div>');</script>
+        
+	<script>
+                 $(document).ready(function() {
+                        $("#all").fadeIn(500);
+                 });
+        </script>
+</body>
+</html>

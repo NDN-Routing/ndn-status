@@ -1,4 +1,4 @@
 <?php
-exec('ssh ndnmonitor@netlogic.cs.memphis.edu /home/ndnmonitor/tmp/ndn-status/run.sh');
+exec('ssh op_mhoque@titan.cs.memphis.edu /home/op_mhoque/ndn-status/run.sh');
 ?>
 

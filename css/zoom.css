@@ -1,0 +1,13 @@
+.large img { width: 3500px; height: 1200px; }
+.small img { width: 1024px; height: 338px; }
+
+/* Dark overlay */
+.az-overlay {
+    background-color: #000;
+    opacity: 0.3;
+    filter: alpha(opacity=30);
+    z-index: 10;
+}
+
+.large { background: #fff; }
+body { margin: 100px; }

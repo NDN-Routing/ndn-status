@@ -1,0 +1,106 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>NDN · Routing Topology</title>
+	
+	<!-- Styles -->
+	<link href="http://fonts.googleapis.com/css?family=Rambla:400,700|Istok+Web:400,700" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" type="text/css" href="../css/style.css" />
+	<link rel="stylesheet" type="text/css" href="../css/anythingzoomer.css" />
+	<style type="text/css">
+		.large img { width: 3500px; height: 1200px; }
+		.small img { width: 824px; height: 338px; }
+
+		/* Dark overlay */
+		.az-overlay {
+    			background-color: #000;
+    			opacity: 0.3;
+    			filter: alpha(opacity=30);
+    			z-index: 10;
+		}
+
+		.large { background: #fff; }
+		#zoom2 { margin-top: 50px; }
+	</style>
+
+	<!-- Load scripts -->
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+	<script src="../js/jquery.anythingzoomer.js"></script>
+</head>
+
+<body>
+	<script type="text/javascript">document.write('<div id="all">');</script>
+	<div id="top2"></div>
+	
+	<div id="contentwrapper">
+		<div id="header">
+			<div id="title">
+				<h1>NDN ·</span> <span id="grey">routing</span> <span id="green">topology</span></h1>
+			</div>
+		
+			<div id="navbar">
+				<ul>
+					<li><a href="../home.html">home</a></li>
+					<li><a href="../status.htm">status</a></li>
+					<li><a href="operators.html">operators</a></li>
+					<li><a href="topology.html" class="active">topology</a></li>
+				</ul>
+			</div>
+		</div>
+
+		<div id="infodiv">
+                        <div id="information" style="width: 100%;">
+                                <!--<p id="grey">To zoom in on a certain region of the topology, just mouseover the region and a zoomed in section will appear. 
+				 If you would like to view the fullsize image, just<span id="green"> double click </span>on the image and it will expand to fullsize.</p>
+                       --> </div>
+
+			<div class="titles2"><p>NDN Topology Map:</p></div>
+			<div id="zoom2">
+    				<div class="small">
+        				<img src="http://www.arl.wustl.edu/~jdd/ndnstatus/ndn_prefix/topology.png">
+    				</div>
+
+    				<!--<div class="large">
+        				<img src="http://www.arl.wustl.edu/~jdd/ndnstatus/ndn_prefix/topology.png">
+    				</div>--> 
+			</div>
+
+		</div>	
+	</div>
+
+	<div id="leftcolumn"></div>
+	<div id="rightcolumn"></div>
+
+	<script type="text/javascript">document.write('</div>');</script>
+        
+	<!-- Script execution -->
+	<script>
+                 $(document).ready(function() {
+                        $("#all").fadeIn(500);
+			$("#zoom2").anythingZoomer();
+                 });
+
+		var owidth = "1066px";
+		var oheight = "388px";
+
+		$("#container").click(function () {
+    			var imgWidth = $(".small").css("width");
+    			var imgHeight = $(".small").css("height");
+    
+    			if (imgWidth == owidth) {
+        			$(".small").css({
+            				width: "3500px",
+            				height: "1200px"
+        			});
+				$('#zoom2').anythingZoomer('disable');
+    			} else {
+        			$(".small").css({
+            				width: owidth,
+            				height: oheight
+        			});
+				$('#zoom2').anythingZoomer('enable');
+    			}
+		});
+        </script>
+</body>
+</html>

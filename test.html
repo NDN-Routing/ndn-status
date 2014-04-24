@@ -1,0 +1,56 @@
+<?xml version = "1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"DTD/xhtml1-strict.dtd">
+<!-- 
+  See COPYING for copyright and distribution information.
+-->
+<html xmlns = "http://www.w3.org/1999/xhtml">
+<meta charset="UTF-8">
+
+<head>
+  <title>NDN Get via WebSocket</title>
+  
+  <script type="text/javascript" src="js/ndn-js.js"></script>
+
+  <script type="text/javascript">
+    //var face = new Face();
+   hostip = "141.225.11.173";
+    var face = new Face({host:hostip});
+        
+    function onData(interest, data) 
+    {
+      console.log("Closure.upcall: content signature verification pass.");
+      console.log("Host: " + face.host + ":" + face.port);
+      nameStr = escape(data.name.toUri());
+      document.getElementById('content').innerHTML += "<p>Name string: " + nameStr + "</p>";
+      document.getElementById('content').innerHTML += "<p>Content buffer length: " + data.content.length + "</p>";
+      document.getElementById('content').innerHTML += EncodingUtils.dataToHtml(data);
+    } 
+    
+    function onTimeout(interest)
+    {
+      console.log("Closure.upcall called with interest time out. Re-expressing the interest.");
+      console.log("Host: " + face.host + ":" + face.port);
+      face.expressInterest(interest, onData, onTimeout);
+    }
+    
+    function run() {
+      face.expressInterest(new Name(document.getElementById('interest').value), onData, onTimeout);
+    }
+    
+  </script>
+  
+</head>
+<body >
+
+  <form>
+    Please Enter an Interest:<br />
+    <input id="interest" type="text" name="INTEREST" size="50" value="/" /> 
+  </form>
+
+  <button id="testBtn" onclick="run()">Fetch Content</button>
+  
+  <p id="content">Content: <br/></p>
+
+</body>
+</html>
