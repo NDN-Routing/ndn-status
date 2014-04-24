@@ -19,12 +19,15 @@ from collections import defaultdict
 # Variables. #
 ##############
 COMMASPACE = ', '
-LOCAL_DIR = '/home/ndnmonitor/LogScripts'
+LOCAL_DIR = '/home/op_mhoque/ndn-status'
 FROM = formataddr((str(Header(u'Adam Alyyan', 'utf-8')), 'aalyyan@memphis.edu'))
 
-CC_LIST = []
 cc1 = formataddr((str(Header(u'Adam Alyyan', 'utf-8')), 'aalyyan@memphis.edu'))
-CC_LIST = [cc1, cc2, cc3, cc4, cc5]
+cc2 = formataddr((str(Header(u'Lan Wang', 'utf-8')), 'lanwang@memphis.edu'))
+cc3 = formataddr((str(Header(u'A K M Mahmudul Hoque', 'utf-8')), 'ahoque1@memphis.edu'))
+cc4 = formataddr((str(Header(u'Obaid Syed', 'utf-8')), 'obaidsyed@gmail.com'))
+CC_LIST = []
+CC_LIST = [cc1, cc2, cc3, cc4]
 
 host_name = {}
 routers = {}
@@ -47,6 +50,7 @@ def send(router, _type):
 		router = router[0]
 
 	toLog('Sending email to: ' + host_name[router])
+	toLog('Alert type: ' + _type);
 
 	message.append('Dear Operator of ' + host_name[router] + ',\n\n')
 
@@ -82,8 +86,9 @@ def send(router, _type):
 		address = element[0]
 		name = element[1]
 		toLog('Recipient: ' + name + ', ' + address)
-		temp = formataddr((str(Header(name, 'utf-8')), address))
-		SEND_LIST.append(temp)
+		tmp = formataddr((str(Header(name, 'utf-8')), address))
+		#tmp = formataddr((str(Header(u'Adam Alyyan', 'utf-8')), 'aalyyan@memphis.edu'))
+		SEND_LIST.append(tmp)
 
 	msg['Subject'] = _type.title() + ' down - ' + host_name[router]
 	msg['From'] = FROM
@@ -91,8 +96,8 @@ def send(router, _type):
 	msg['cc'] = COMMASPACE.join(CC_LIST)
 
 	# Send the email using UoM mail server.
-	#s = smtplib.SMTP('localhost')
-	#s.sendmail(FROM, SEND_LIST+CC_LIST, msg.as_string())
+	s = smtplib.SMTP('mta.memphis.edu', 25)
+	s.sendmail(FROM, SEND_LIST+CC_LIST, msg.as_string())
 	s.quit()
 
 	toLog('Email successfully sent to: ' + host_name[router])
@@ -205,13 +210,16 @@ topo_routers = [x[0] for x in topology]
 no_prefix = set(topo_routers) - set(temp_routers)
 no_prefix = list(no_prefix)
 
-temp = defaultdict(set)
-
 for node in no_prefix:
+	print host_name[node] + '\n'
+	print node + '\n\n'
+
 	if 'netlogic' in host_name[node] or '141.225.11.150' in node:
 		send(node, 'prefix')
 		print 'netlogic found. Terminating'
 		sys.exit(0)
+
+temp = defaultdict(set)
 
 for router, link in no_link:
 	add = True
@@ -225,6 +233,12 @@ for router, link in no_link:
 		temp[router].add(link)
 
 no_link = temp
+
+print no_prefix
+
+print '\n\n\n'
+
+print no_link
 
 ####################
 # Send out emails. #
@@ -241,4 +255,3 @@ for router in no_link.keys():
 	send(router, 'link')
 
 toLog('Instance ended.\n\n')
-

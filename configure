@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import os
+
 parse = []
 process = []
 notify = []
@@ -16,23 +18,27 @@ with open('notify.py') as f:
 	for line in f:
 		notify.append(line)
 
-localdir = raw_input('Enter local directroy (do not include the trailing /\n>> ')
-logdir = raw_input('Enter the log directory (do not include the trailing /\n>> ')
-timezone = raw_input('Enter your timezone (i.e. CST)\n>> ')
+localdir = os.getcwd()
+logdir = raw_input('Path to ospfn logs: (exclude the trailing "/")\n>> ')
+prefix = raw_input('Prefix to publish under (i.e. /ndn/netlab/status)\n>> ')
 
 with open('parse.py', 'w') as f:
 	for line in parse:
 		if 'localdir =' in line:
 			f.write('localdir = \'' + localdir + '\'\n')
+		elif 'pubprefix = ' in line:
+			f.write('pubprefix = \'' + prefix + '\'\n')
 		else:
 			f.write(line)
 			
 with open('process.py', 'w') as f:
 	for line in process:
 		if 'localdir =' in line:
-                        f.write('localdir = \'' + localdir + '\'\n')
-                else:
-                        f.write(line)
+			f.write('localdir = \'' + localdir + '\'\n')
+		elif 'pubprefix = ' in line:
+			f.write('pubprefix = \'' + prefix + '\'\n')
+		else:
+			f.write(line)
 
 with open('notify.py', 'w') as f:
         for line in notify:
@@ -46,9 +52,7 @@ with open('parse.conf', 'w') as f:
 	f.write('lastfile=0\n')
 	f.write('lasttimestamp=0\n')
 	f.write('lastbyte=0\n')
-	f.write('timezone=' + timezone + '\n')
 	f.write('timetaken=0\n')
 
-f = open('links', 'w').close()
-f = open('link_timestamp', 'w').close()
-f = open('prefix', 'w').close()
+os.system("rm prefix links link_timestamp")
+os.system("touch prefix links link_timestamp")
